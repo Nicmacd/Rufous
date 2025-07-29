@@ -74,6 +74,27 @@ class Config(BaseModel):
         description="Maximum API calls per minute"
     )
     
+    # PDF Processing Configuration
+    database_path: str = Field(
+        default_factory=lambda: os.getenv("RUFOUS_DATABASE_PATH", ""),
+        description="Path to SQLite database file (defaults to ~/rufous_data.db if empty)"
+    )
+    
+    statements_directory: str = Field(
+        default_factory=lambda: os.getenv("RUFOUS_STATEMENTS_DIRECTORY", "./statements"),
+        description="Directory to store uploaded statement files"
+    )
+    
+    auto_categorize_transactions: bool = Field(
+        default_factory=lambda: os.getenv("RUFOUS_AUTO_CATEGORIZE", "true").lower() == "true",
+        description="Automatically categorize transactions using Claude"
+    )
+    
+    pdf_processing_enabled: bool = Field(
+        default_factory=lambda: os.getenv("RUFOUS_PDF_PROCESSING", "true").lower() == "true",
+        description="Enable PDF statement processing"
+    )
+    
     def validate_config(self) -> bool:
         """Validate the configuration"""
         if not self.flinks_customer_id:
@@ -102,5 +123,15 @@ class Config(BaseModel):
             "bearer_token": self.flinks_bearer_token,
             "auth_key": self.flinks_auth_key,
             "x_api_key": self.flinks_x_api_key,
+            "debug": self.log_level == "DEBUG",
+        }
+    
+    def get_pdf_config(self) -> dict:
+        """Get configuration dict for PDF processing"""
+        return {
+            "database_path": self.database_path or None,  # None triggers default path
+            "statements_directory": self.statements_directory,
+            "auto_categorize": self.auto_categorize_transactions,
+            "processing_enabled": self.pdf_processing_enabled,
             "debug": self.log_level == "DEBUG",
         } 
