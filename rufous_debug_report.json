@@ -1,0 +1,168 @@
+{
+  "timestamp": "2025-07-28T22:34:34.785553",
+  "tests": {
+    "env_file_exists": {
+      "success": true,
+      "details": "Found .env file",
+      "error": null,
+      "timestamp": "2025-07-28T22:34:34.785581"
+    },
+    "dependency_mcp": {
+      "success": true,
+      "details": "mcp imported successfully",
+      "error": null,
+      "timestamp": "2025-07-28T22:34:34.997550"
+    },
+    "dependency_requests": {
+      "success": true,
+      "details": "requests imported successfully",
+      "error": null,
+      "timestamp": "2025-07-28T22:34:35.044939"
+    },
+    "dependency_pydantic": {
+      "success": true,
+      "details": "pydantic imported successfully",
+      "error": null,
+      "timestamp": "2025-07-28T22:34:35.044969"
+    },
+    "dependency_asyncio": {
+      "success": true,
+      "details": "asyncio imported successfully",
+      "error": null,
+      "timestamp": "2025-07-28T22:34:35.044978"
+    },
+    "mcp_version": {
+      "success": true,
+      "details": "MCP version: 1.0.0",
+      "error": null,
+      "timestamp": "2025-07-28T22:34:35.087181"
+    },
+    "config_flinks_customer_id": {
+      "success": true,
+      "details": "Value: 43387ca6-0391-4c82-857d-70d95f087ecb",
+      "error": null,
+      "timestamp": "2025-07-28T22:34:35.091213"
+    },
+    "config_flinks_api_url": {
+      "success": true,
+      "details": "Value: https://toolbox-api.private.fin.ag/v3",
+      "error": null,
+      "timestamp": "2025-07-28T22:34:35.091235"
+    },
+    "config_flinks_bearer_token": {
+      "success": true,
+      "details": "Value: [REDACTED]",
+      "error": null,
+      "timestamp": "2025-07-28T22:34:35.091243"
+    },
+    "config_flinks_auth_key": {
+      "success": true,
+      "details": "Value: [REDACTED]",
+      "error": null,
+      "timestamp": "2025-07-28T22:34:35.091250"
+    },
+    "config_flinks_x_api_key": {
+      "success": true,
+      "details": "Value: [REDACTED]",
+      "error": null,
+      "timestamp": "2025-07-28T22:34:35.091257"
+    },
+    "flinks_config_method": {
+      "success": true,
+      "details": "Config keys: ['customer_id', 'api_endpoint', 'bearer_token', 'auth_key', 'x_api_key', 'debug']",
+      "error": null,
+      "timestamp": "2025-07-28T22:34:35.091268"
+    },
+    "flinks_client": {
+      "success": false,
+      "details": null,
+      "error": "'dict' object has no attribute 'flinks_api_url'",
+      "timestamp": "2025-07-28T22:34:35.093855"
+    },
+    "server_creation": {
+      "success": true,
+      "details": "SimpleRufousServer created",
+      "error": null,
+      "timestamp": "2025-07-28T22:34:35.095718"
+    },
+    "tool_definitions": {
+      "success": true,
+      "details": "Found 3 tool definitions",
+      "error": null,
+      "timestamp": "2025-07-28T22:34:35.095727"
+    },
+    "tool_connect_bank_account": {
+      "success": true,
+      "details": "Tool: connect_bank_account",
+      "error": null,
+      "timestamp": "2025-07-28T22:34:35.095733"
+    },
+    "tool_fetch_transactions": {
+      "success": true,
+      "details": "Tool: fetch_transactions",
+      "error": null,
+      "timestamp": "2025-07-28T22:34:35.095739"
+    },
+    "tool_analyze_spending": {
+      "success": true,
+      "details": "Tool: analyze_spending",
+      "error": null,
+      "timestamp": "2025-07-28T22:34:35.095744"
+    },
+    "server_flinks_init": {
+      "success": true,
+      "details": "Server's FlinksClient initialized",
+      "error": null,
+      "timestamp": "2025-07-28T22:34:35.095766"
+    },
+    "mock_connect_bank": {
+      "success": true,
+      "details": "Result type: <class 'dict'>, Has content: True",
+      "error": null,
+      "timestamp": "2025-07-28T22:34:35.095868"
+    },
+    "mock_response_format": {
+      "success": true,
+      "details": "Login ID: mock_login_FlinksCapital_123456",
+      "error": null,
+      "timestamp": "2025-07-28T22:34:35.095882"
+    },
+    "claude_config_exists": {
+      "success": true,
+      "details": "Config file found at: /Users/nicmacd/Library/Application Support/Claude/claude_desktop_config.json",
+      "error": null,
+      "timestamp": "2025-07-28T22:34:35.096265"
+    },
+    "claude_rufous_config": {
+      "success": true,
+      "details": "Found server: rufous-financial",
+      "error": null,
+      "timestamp": "2025-07-28T22:34:35.096279"
+    },
+    "claude_server_command": {
+      "success": true,
+      "details": "Command: /opt/homebrew/Caskroom/miniconda/base/bin/python",
+      "error": null,
+      "timestamp": "2025-07-28T22:34:35.096285"
+    },
+    "claude_server_args": {
+      "success": true,
+      "details": "Args: ['/Users/nicmacd/Documents/GitHub/Rufous/rufous_mcp/simple_server.py']",
+      "error": null,
+      "timestamp": "2025-07-28T22:34:35.096291"
+    },
+    "claude_server_env": {
+      "success": true,
+      "details": "Env vars: ['FLINKS_CUSTOMER_ID', 'FLINKS_API_URL', 'FLINKS_BEARER_TOKEN', 'FLINKS_AUTH_KEY', 'FLINKS_X_API_KEY', 'PYTHONPATH']",
+      "error": null,
+      "timestamp": "2025-07-28T22:34:35.096297"
+    }
+  },
+  "errors": [],
+  "summary": {
+    "total": 26,
+    "passed": 25,
+    "failed": 1,
+    "success_rate": "96.2%"
+  }
+}

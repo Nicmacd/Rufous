@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "rufous-financial": {
+      "command": "python",
+      "args": ["-m", "rufous_mcp.server"],
+      "cwd": "/Users/nicmacd/Documents/GitHub/Rufous",
+      "env": {
+        "FLINKS_CUSTOMER_ID": "43387ca6-0391-4c82-857d-70d95f087ecb",
+        "FLINKS_API_URL": "https://toolbox-api.private.fin.ag/v3"
+      }
+    }
+  }
+}
