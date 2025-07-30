@@ -97,8 +97,8 @@ class MinimalRufousServer:
         
         logger.info("Rufous MCP Server initialized")
     
-    def _create_success_result(self, data: Any, message: str = None) -> types.CallToolResult:
-        """Create a successful tool result following exact MCP documentation pattern"""
+    def _create_success_result(self, data: Any, message: str = None):
+        """Create a successful tool result - return content array to avoid CallToolResult serialization bug"""
         if isinstance(data, dict) or isinstance(data, list):
             content_text = json.dumps(data, indent=2, default=str)
         else:
@@ -107,31 +107,27 @@ class MinimalRufousServer:
         if message:
             content_text = f"{message}\n\n{content_text}"
         
-        # Create TextContent first as a separate object to avoid tuple conversion
-        text_content = types.TextContent(
-            type="text",
-            text=content_text
-        )
-        
-        # Create CallToolResult with explicit keyword arguments to prevent tuple formation
-        return types.CallToolResult(
-            content=[text_content]
-            # Note: isError defaults to False, meta defaults to None, structuredContent defaults to None
-        )
+        # Return content array directly - workaround for MCP SDK serialization bug
+        # Let the MCP framework create the CallToolResult wrapper
+        return [
+            types.TextContent(
+                type="text",
+                text=content_text
+            )
+        ]
     
-    def _create_error_result(self, error: str) -> types.CallToolResult:
-        """Create an error tool result following exact MCP documentation pattern"""
-        # Create TextContent first as a separate object to avoid tuple conversion
-        text_content = types.TextContent(
-            type="text",
-            text=f"Error: {error}"
-        )
-        
-        # Create CallToolResult with explicit keyword arguments - isError first as per docs
-        return types.CallToolResult(
-            isError=True,
-            content=[text_content]
-        )
+    def _create_error_result(self, error: str):
+        """Create an error tool result - return error format to avoid CallToolResult serialization bug"""
+        # Return error dict directly - workaround for MCP SDK serialization bug
+        return {
+            "isError": True,
+            "content": [
+                types.TextContent(
+                    type="text",
+                    text=f"Error: {error}"
+                )
+            ]
+        }
     
     def _setup_handlers(self):
         """Setup MCP server handlers using the working pattern from simple_server.py"""
