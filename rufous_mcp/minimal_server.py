@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Minimal Rufous Database Server - Based on working simple_server.py pattern
+Rufous MCP Server - PDF Statement Analysis and Financial Health Tracking
 """
 
 import asyncio
@@ -34,8 +34,8 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-class MinimalRufousServer:
-    """Minimal MCP server following the exact working pattern"""
+class RufousServer:
+    """Rufous MCP server for PDF statement processing and financial analysis"""
     
     def __init__(self):
         """Initialize the minimal server"""
@@ -46,7 +46,7 @@ class MinimalRufousServer:
         self.database = RufousDatabase(pdf_config.get('database_path'))
         
         # Initialize MCP server
-        self.server = Server("rufous-minimal")
+        self.server = Server("rufous-financial")
         
         # Tool definitions - minimal set
         self.tool_definitions = [
