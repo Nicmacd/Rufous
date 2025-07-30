@@ -1,252 +1,168 @@
-# Rufous - Financial Health MCP Server
+# Rufous MCP Server
 
-A **Model Context Protocol (MCP) server** for financial health tracking using **Flinks** to connect with Canadian banks. Built as a modern replacement for Mint, this server provides Claude Desktop with powerful financial analysis capabilities.
+A **Model Context Protocol (MCP) server** for PDF statement analysis and financial health tracking. This server provides Claude Desktop with powerful financial analysis capabilities by processing uploaded bank statements and credit card statements.
 
-## 🌟 Features
+## ✨ Features
 
-- **🏦 Bank Connectivity**: Connect to Canadian banks via Flinks API
-- **📊 Transaction Analysis**: Fetch and analyze transaction data
-- **💰 Spending Insights**: Detailed spending pattern analysis
-- **📈 Period Comparisons**: Compare spending across different time periods
-- **🏷️ Category Breakdown**: Intelligent expense categorization
-- **🎯 Financial Health**: Comprehensive financial health scoring
-- **🚨 Smart Alerts**: Automated insights and recommendations
+- **📄 PDF Statement Processing**: Upload and analyze bank statements, credit card statements, and financial documents
+- **🤖 AI-Powered Categorization**: Automatic transaction categorization using Claude's intelligence
+- **📊 Financial Analysis**: Spending patterns, category breakdowns, and financial insights
+- **💾 Local Data Storage**: All data stays on your device - privacy focused
+- **🔧 MCP Integration**: Works seamlessly with Claude Desktop
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
 - Python 3.8 or higher
-- Claude Desktop
-- Flinks API credentials (get them at [flinks.com](https://flinks.com))
+- Claude Desktop application
+- PDF financial statements to analyze
 
 ### Installation
 
-1. **Clone the repository:**
+1. **Clone the repository**:
    ```bash
-   git clone <repository-url>
-   cd Rufous
+   git clone https://github.com/your-username/rufous.git
+   cd rufous
    ```
 
-2. **Install dependencies:**
+2. **Install dependencies**:
    ```bash
    pip install -r requirements.txt
    ```
 
-3. **Configure environment:**
+3. **Set up configuration**:
    ```bash
    cp env.example .env
-   # Edit .env with your Flinks credentials
+   # Edit .env with your preferences (optional - defaults work fine)
    ```
 
-4. **Configure Claude Desktop:**
-   Add to your Claude Desktop MCP settings:
+4. **Configure Claude Desktop**:
+   Add this to your Claude Desktop configuration file:
    ```json
    {
      "mcpServers": {
-       "rufous-financial": {
+       "rufous": {
          "command": "python",
-         "args": ["/path/to/Rufous/rufous_mcp/server.py"],
-         "env": {
-           "FLINKS_CUSTOMER_ID": "your_customer_id",
-           "FLINKS_API_URL": "https://toolbox-api.private.fin.ag/v3"
-         }
+         "args": ["/path/to/your/rufous/rufous_mcp/server.py"]
        }
      }
    }
    ```
 
-## 🛠️ Available Tools
+## 📊 How It Works
 
-### 1. Connect Bank Account
-Connect to Canadian banks securely through Flinks:
-```
-connect_bank_account(institution="RBC", username="...", password="...")
-```
+Upload your PDF bank statements to Claude Desktop, and Rufous will:
 
-### 2. Fetch Transactions
-Retrieve transaction data for analysis:
-```
-fetch_transactions(login_id="...", days=30)
-```
+1. **Extract Transaction Data**: Parse PDF statements to extract transaction details
+2. **Categorize Spending**: Automatically categorize transactions (groceries, entertainment, utilities, etc.)
+3. **Analyze Patterns**: Identify spending trends and patterns
+4. **Generate Insights**: Provide financial health insights and recommendations
 
-### 3. Analyze Spending
-Get detailed spending pattern analysis:
 ```
-analyze_spending(login_id="...", days=30)
+Claude Desktop ←→ Rufous MCP Server ←→ Local Database ←→ PDF Processing
 ```
-
-### 4. Compare Periods
-Compare spending across different time periods:
-```
-compare_periods(login_id="...", current_period_days=30, previous_period_days=30)
-```
-
-### 5. Categorize Expenses
-Detailed breakdown by spending categories:
-```
-categorize_expenses(login_id="...", days=30, include_subcategories=false)
-```
-
-### 6. Financial Summary
-Comprehensive financial health overview:
-```
-get_financial_summary(login_id="...", days=30, include_comparisons=true)
-```
-
-## 💬 Example Usage with Claude
-
-Once configured, you can ask Claude questions like:
-
-- *"Connect to my RBC account and show me my spending for the last month"*
-- *"How much did I spend on dining out compared to last month?"*
-- *"Give me a complete financial health summary"*
-- *"What categories am I spending the most on?"*
-- *"Compare my spending this month to last month"*
 
 ## 🏗️ Architecture
 
-```
-Claude Desktop ←→ Rufous MCP Server ←→ Flinks API ←→ Canadian Banks
-                      ↓
-                 Data Analysis
-                      ↓
-              Structured JSON Response
-```
-
-### Key Components
-
-- **MCP Server Core**: Handles Claude Desktop communication
-- **Flinks Client**: Manages bank connections and data retrieval
-- **Analysis Engine**: Processes financial data and generates insights
-- **Tools**: Individual MCP tools for specific financial operations
+- **MCP Server**: Handles communication with Claude Desktop
+- **PDF Processor**: Extracts transaction data from PDF statements
+- **Database**: SQLite database for storing transaction data locally
+- **Analysis Engine**: Categorizes and analyzes financial data
 
 ## ⚙️ Configuration
 
-### Environment Variables
-
-| Variable | Description | Required | Default |
-|----------|-------------|----------|---------|
-| `FLINKS_CUSTOMER_ID` | Your Flinks Customer ID | Yes | - |
-| `FLINKS_API_URL` | Flinks API endpoint | No | Sandbox URL |
-| `USE_PERSISTENT_STORAGE` | Enable persistent data storage | No | `false` |
-| `SESSION_TIMEOUT_MINUTES` | Session timeout for cached data | No | `30` |
+| Environment Variable | Description | Required | Default |
+|---------------------|-------------|----------|---------|
+| `RUFOUS_DATABASE_PATH` | Path to SQLite database | No | `~/rufous_data.db` |
+| `RUFOUS_STATEMENTS_DIRECTORY` | Directory for uploaded statements | No | `./statements` |
+| `RUFOUS_AUTO_CATEGORIZE` | Auto-categorize transactions | No | `true` |
+| `RUFOUS_PDF_PROCESSING` | Enable PDF processing | No | `true` |
+| `USE_PERSISTENT_STORAGE` | Use persistent storage | No | `false` |
+| `SESSION_TIMEOUT_MINUTES` | Session timeout | No | `30` |
 | `LOG_LEVEL` | Logging level | No | `INFO` |
-| `MAX_TRANSACTION_DAYS` | Maximum days of transaction history | No | `365` |
 
-### Supported Canadian Banks
+## 🏦 Supported Formats
 
-- Royal Bank of Canada (RBC)
-- Toronto-Dominion Bank (TD)
+Currently supports PDF statements from major Canadian banks and credit card companies:
+
+- RBC (Royal Bank of Canada)
+- TD Bank
 - Bank of Montreal (BMO)
 - Scotiabank
-- Canadian Imperial Bank of Commerce (CIBC)
-- And many more through Flinks...
+- CIBC
+- And many more...
 
-## 🔒 Security & Privacy
+## 📁 Project Structure
 
-- **No Credential Storage**: Bank credentials are never stored
-- **Session-Based**: Data is cached temporarily for performance
-- **Encrypted Transport**: All communications use HTTPS
-- **Rate Limited**: Respects API rate limits
-- **Minimal Data**: Only retrieves necessary financial data
-
-## 📊 Data Models
-
-### Transaction
-```python
-{
-  "id": "transaction_id",
-  "amount": -45.67,
-  "date": "2024-01-15T10:30:00Z",
-  "description": "Coffee Shop Purchase",
-  "category": "Dining",
-  "account_id": "account_123"
-}
 ```
-
-### Financial Summary
-```python
-{
-  "overview": {...},
-  "spending_analysis": {...},
-  "category_insights": {...},
-  "financial_health": {...},
-  "health_score": 85,
-  "recommendations": [...],
-  "alerts": [...]
-}
-```
-
-## 🔧 Development
-
-### Project Structure
-```
-Rufous/
+rufous/
 ├── rufous_mcp/
 │   ├── __init__.py
 │   ├── server.py           # Main MCP server
 │   ├── config.py           # Configuration management
-│   ├── flinks_client.py    # Flinks API client
+│   ├── database.py         # Database operations
 │   ├── models.py           # Data models
-│   └── tools/              # MCP tools
-│       ├── connect_bank.py
-│       ├── fetch_transactions.py
-│       ├── analyze_spending.py
-│       ├── compare_periods.py
-│       ├── category_breakdown.py
-│       └── financial_summary.py
-├── requirements.txt
-├── env.example
+│   ├── minimal_server.py   # Minimal server implementation
+│   └── tools/
+│       ├── __init__.py
+│       └── base.py         # Base tool class
+├── statements/             # Statement storage directory
+├── env.example            # Example environment configuration
+├── requirements.txt       # Python dependencies
+├── setup.py              # Package setup
 └── README.md
 ```
 
-### Running in Development
+## 🛠️ Development
 
-1. Set up development environment:
-   ```bash
-   pip install -r requirements.txt
-   export FLINKS_CUSTOMER_ID="your_test_id"
-   export LOG_LEVEL="DEBUG"
-   ```
+### Running in Development Mode
 
-2. Run the server:
-   ```bash
-   python rufous_mcp/server.py
-   ```
+```bash
+# Start the server directly
+python rufous_mcp/server.py
 
-3. Test with Claude Desktop in sandbox mode
+# Or use the minimal server for testing
+python rufous_mcp/minimal_server.py
+```
+
+### Testing
+
+```bash
+# Test the MCP server functionality
+python -m pytest tests/
+
+# Test database operations
+python view_database.py
+```
+
+## 🔒 Privacy & Security
+
+- **Local Processing**: All data processing happens locally on your device
+- **No Cloud Upload**: Your financial data never leaves your computer
+- **Secure Storage**: Transaction data is stored in a local SQLite database
+- **Optional Data Retention**: Configure data retention policies to your preference
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see our contributing guidelines for details.
-
-### Development Setup
-
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Commit your changes: `git commit -m 'Add amazing feature'`
+4. Push to the branch: `git push origin feature/amazing-feature`
+5. Open a Pull Request
 
-## 📝 License
+## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 🆘 Support
 
-- **Issues**: Use GitHub Issues for bugs and feature requests
-- **Documentation**: Check our [Wiki](wiki-link) for detailed guides
-- **Community**: Join our [Discord](discord-link) for discussions
+- Create an [Issue](https://github.com/your-username/rufous/issues) for bug reports or feature requests
+- Check the [Wiki](https://github.com/your-username/rufous/wiki) for detailed documentation
+- Join our community discussions
 
-## 🔗 Related Projects
+## 🙏 Acknowledgments
 
-- [Flinks API Documentation](https://docs.flinks.com/)
-- [Model Context Protocol](https://github.com/modelcontextprotocol)
-- [Claude Desktop](https://claude.ai/desktop)
-
----
-
-**Built with ❤️ for the financial health community**
-
-> **Note**: This project is in active development. Features and APIs may change. Always test in sandbox mode first! 
+- Built with the [Model Context Protocol](https://github.com/anthropics/mcp) by Anthropic
+- Powered by Claude AI for intelligent financial analysis
+- Designed for Canadian banking and financial institutions

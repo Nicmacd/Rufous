@@ -1,5 +1,5 @@
 """
-Rufous MCP Server - Financial Health Tracking with Flinks
+Rufous MCP Server - PDF Statement Analysis and Financial Health Tracking
 A Model Context Protocol server for analyzing Canadian financial data.
 """
 

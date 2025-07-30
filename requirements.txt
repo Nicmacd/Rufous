@@ -1,8 +1,7 @@
 # MCP Server dependencies
 mcp==1.1.0
 
-# Flinks API client
-flinks>=0.1.0a2
+# Core financial processing dependencies
 requests>=2.31.0
 
 # PDF Processing removed - using Claude's multimodal instead

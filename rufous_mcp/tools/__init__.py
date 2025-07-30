@@ -1,19 +1,10 @@
 """
-MCP Tools for Rufous Financial Health Server
+MCP Tools for Rufous PDF Financial Analysis Server
 """
 
-from .connect_bank import ConnectBankTool
-from .fetch_transactions import FetchTransactionsTool
-from .analyze_spending import AnalyzeSpendingTool
-from .compare_periods import ComparePeriodsTools
-from .category_breakdown import CategoryBreakdownTool
-from .financial_summary import FinancialSummaryTool
+# Base tool class for future PDF processing tools
+from .base import BaseTool
 
 __all__ = [
-    "ConnectBankTool",
-    "FetchTransactionsTool", 
-    "AnalyzeSpendingTool",
-    "ComparePeriodsTools",
-    "CategoryBreakdownTool",
-    "FinancialSummaryTool",
-] 
+    "BaseTool",
+]

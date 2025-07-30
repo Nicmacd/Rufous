@@ -14,8 +14,8 @@ logger = logging.getLogger(__name__)
 class BaseTool(ABC):
     """Base class for all MCP tools"""
     
-    def __init__(self, flinks_client):
-        self.flinks_client = flinks_client
+    def __init__(self, config=None):
+        self.config = config
     
     @abstractmethod
     def get_tool_definition(self) -> Tool:

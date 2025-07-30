@@ -15,7 +15,7 @@ setup(
     version="0.1.0",
     author="Rufous Financial Health Team",
     author_email="team@rufous.dev",
-    description="A Model Context Protocol server for financial health tracking with Flinks",
+    description="A Model Context Protocol server for PDF statement analysis and financial health tracking",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/your-org/rufous",
@@ -55,7 +55,7 @@ setup(
         "Source": "https://github.com/your-org/rufous",
         "Documentation": "https://github.com/your-org/rufous/wiki",
     },
-    keywords="mcp financial health flinks banking canada claude ai",
+    keywords="mcp financial health pdf statements banking canada claude ai",
     include_package_data=True,
     zip_safe=False,
 ) 

@@ -14,34 +14,25 @@ load_dotenv()
 class Config(BaseModel):
     """Configuration for Rufous MCP Server"""
     
-    # Flinks API Configuration
-    flinks_customer_id: str = Field(
-        default_factory=lambda: os.getenv("FLINKS_CUSTOMER_ID", ""),
-        description="Flinks Customer ID for API authentication"
+    # PDF Processing Configuration
+    database_path: str = Field(
+        default_factory=lambda: os.getenv("RUFOUS_DATABASE_PATH", ""),
+        description="Path to SQLite database file (defaults to ~/rufous_data.db if empty)"
     )
     
-    flinks_api_url: str = Field(
-        default_factory=lambda: os.getenv(
-            "FLINKS_API_URL", 
-            "https://toolbox-api.private.fin.ag/v3"  # Default to sandbox
-        ),
-        description="Flinks API base URL (sandbox or production)"
+    statements_directory: str = Field(
+        default_factory=lambda: os.getenv("RUFOUS_STATEMENTS_DIRECTORY", "./statements"),
+        description="Directory to store uploaded statement files"
     )
     
-    # Additional Flinks credentials
-    flinks_bearer_token: str = Field(
-        default_factory=lambda: os.getenv("FLINKS_BEARER_TOKEN", ""),
-        description="Flinks Bearer token for authentication"
+    auto_categorize_transactions: bool = Field(
+        default_factory=lambda: os.getenv("RUFOUS_AUTO_CATEGORIZE", "true").lower() == "true",
+        description="Automatically categorize transactions using Claude"
     )
     
-    flinks_auth_key: str = Field(
-        default_factory=lambda: os.getenv("FLINKS_AUTH_KEY", ""),
-        description="Flinks auth key for GenerateAuthorizeToken"
-    )
-    
-    flinks_x_api_key: str = Field(
-        default_factory=lambda: os.getenv("FLINKS_X_API_KEY", ""),
-        description="Flinks X-API-Key for aggregation endpoints"
+    pdf_processing_enabled: bool = Field(
+        default_factory=lambda: os.getenv("RUFOUS_PDF_PROCESSING", "true").lower() == "true",
+        description="Enable PDF statement processing"
     )
     
     # Data storage strategy
@@ -74,57 +65,13 @@ class Config(BaseModel):
         description="Maximum API calls per minute"
     )
     
-    # PDF Processing Configuration
-    database_path: str = Field(
-        default_factory=lambda: os.getenv("RUFOUS_DATABASE_PATH", ""),
-        description="Path to SQLite database file (defaults to ~/rufous_data.db if empty)"
-    )
-    
-    statements_directory: str = Field(
-        default_factory=lambda: os.getenv("RUFOUS_STATEMENTS_DIRECTORY", "./statements"),
-        description="Directory to store uploaded statement files"
-    )
-    
-    auto_categorize_transactions: bool = Field(
-        default_factory=lambda: os.getenv("RUFOUS_AUTO_CATEGORIZE", "true").lower() == "true",
-        description="Automatically categorize transactions using Claude"
-    )
-    
-    pdf_processing_enabled: bool = Field(
-        default_factory=lambda: os.getenv("RUFOUS_PDF_PROCESSING", "true").lower() == "true",
-        description="Enable PDF statement processing"
-    )
-    
     def validate_config(self) -> bool:
         """Validate the configuration"""
-        if not self.flinks_customer_id:
-            raise ValueError("FLINKS_CUSTOMER_ID is required")
-        
-        if not self.flinks_api_url:
-            raise ValueError("FLINKS_API_URL is required")
+        # Basic validation - ensure statements directory exists or can be created
+        if self.statements_directory:
+            os.makedirs(self.statements_directory, exist_ok=True)
         
         return True
-    
-    @property
-    def is_sandbox(self) -> bool:
-        """Check if we're using the sandbox environment"""
-        return "toolbox-api" in self.flinks_api_url or "sandbox" in self.flinks_api_url
-    
-    @property
-    def is_production(self) -> bool:
-        """Check if we're using the production environment"""
-        return not self.is_sandbox
-    
-    def get_flinks_config(self) -> dict:
-        """Get configuration dict for Flinks client"""
-        return {
-            "customer_id": self.flinks_customer_id,
-            "api_endpoint": self.flinks_api_url,
-            "bearer_token": self.flinks_bearer_token,
-            "auth_key": self.flinks_auth_key,
-            "x_api_key": self.flinks_x_api_key,
-            "debug": self.log_level == "DEBUG",
-        }
     
     def get_pdf_config(self) -> dict:
         """Get configuration dict for PDF processing"""
@@ -134,4 +81,4 @@ class Config(BaseModel):
             "auto_categorize": self.auto_categorize_transactions,
             "processing_enabled": self.pdf_processing_enabled,
             "debug": self.log_level == "DEBUG",
-        } 
+        }

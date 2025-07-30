@@ -1,0 +1,77 @@
+# Environment variables (contains sensitive API keys)
+.env
+*.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Database files (might contain sensitive transaction data)
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+*.log
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Debug and test outputs
+rufous_debug_report.json
+
+# Personal configuration files
+Support/Claude/claude_desktop_config.json
+
+# Statement files (might contain personal financial data)
+statements/
+*.pdf
+*.csv
+*.xlsx
+
+# Any backup files
+*.bak
+*.backup
