@@ -524,6 +524,20 @@ def render_chat_section():
                     else:
                         response = str(result)
                 
+                # Clean up concatenated text issues
+                if isinstance(response, str):
+                    import re
+                    # Fix common concatenation issues
+                    response = re.sub(r'(\d+),(\d+)', r'\1,\2', response)  # Fix number formatting
+                    response = re.sub(r'(\d+)([a-zA-Z])', r'\1 \2', response)  # "2025broken" -> "2025 broken"
+                    response = re.sub(r'([a-z])([A-Z])', r'\1 \2', response)  # "categoryThat" -> "category That"
+                    response = re.sub(r'([a-zA-Z])(\d+)', r'\1 \2', response)  # "year2025" -> "year 2025"
+                    response = re.sub(r'([.,])([a-zA-Z])', r'\1 \2', response)  # ",broken" -> ", broken"
+                    response = re.sub(r'([a-zA-Z])([.,])', r'\1\2', response)  # "year ," -> "year,"
+                    # Fix specific concatenations
+                    response = re.sub(r'totaling(\d)', r'totaling \1', response)
+                    response = re.sub(r'(\$\d+(?:\.\d+)?)([a-zA-Z])', r'\1 \2', response)  # "$1,953.14The" -> "$1,953.14 The"
+                
                 # Display response in a cleaner format
                 with st.container():
                     st.markdown(f"**You:** {query}")
