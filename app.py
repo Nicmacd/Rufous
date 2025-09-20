@@ -914,8 +914,9 @@ def process_uploaded_files(uploaded_files, default_account_type):
             if result['status'] == 'success':
                 # Handle different result structures
                 transactions_count = result.get('transactions_added', 
-                                               result.get('transaction_count', 
-                                                         len(result.get('transactions', []))))
+                                               result.get('total_transactions',
+                                                         result.get('transaction_count', 
+                                                                   len(result.get('transactions', [])))))
                 st.success(f"✅ {uploaded_file.name}: {transactions_count} transactions added")
                 processed_count += 1
             else:
