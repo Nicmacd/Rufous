@@ -912,10 +912,15 @@ def process_uploaded_files(uploaded_files, default_account_type):
             )
             
             if result['status'] == 'success':
-                st.success(f"✅ {uploaded_file.name}: {result['transactions_added']} transactions added")
+                # Handle different result structures
+                transactions_count = result.get('transactions_added', 
+                                               result.get('transaction_count', 
+                                                         len(result.get('transactions', []))))
+                st.success(f"✅ {uploaded_file.name}: {transactions_count} transactions added")
                 processed_count += 1
             else:
-                st.error(f"❌ {uploaded_file.name}: {result['message']}")
+                error_msg = result.get('message', result.get('error', 'Processing failed'))
+                st.error(f"❌ {uploaded_file.name}: {error_msg}")
             
             # Clean up
             temp_path.unlink(missing_ok=True)
