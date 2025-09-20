@@ -503,6 +503,26 @@ def render_chat_section():
             try:
                 result = st.session_state.chat_handler.process_query(query)
                 
+                # Handle error responses
+                if isinstance(result, dict) and result.get('status') == 'error':
+                    error_msg = result.get('message', 'Unknown error')
+                    
+                    # Check for common SQL errors and provide helpful suggestions
+                    if 'syntax error' in error_msg.lower():
+                        if 'median' in query.lower():
+                            st.error("**SQL Error:** SQLite doesn't support MEDIAN function directly.")
+                            st.info("💡 **Try instead:** 'average spend in august' or 'spending in august sorted by amount'")
+                        else:
+                            st.error(f"**SQL Syntax Error:** {error_msg}")
+                            st.info("💡 Try rephrasing your question or use simpler terms.")
+                    else:
+                        st.error(f"**Query Error:** {error_msg}")
+                    
+                    # Show debug info for errors too
+                    with st.expander("🔍 Debug - Error Details", expanded=False):
+                        st.json(result)
+                    return
+                
                 # Debug: Show what we're getting (developer requested)
                 with st.expander("🔍 Debug - Query Details", expanded=False):
                     st.json(result)
