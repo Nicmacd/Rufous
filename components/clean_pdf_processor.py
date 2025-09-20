@@ -46,9 +46,13 @@ class CleanPDFProcessor:
             
             logger.info(f"Successfully processed {pdf_path.name}: {len(unique_transactions)} transactions")
             
+            # Try to extract statement date from filename
+            statement_date = self._extract_statement_date_from_filename(pdf_path)
+            
             return {
                 'status': 'success',
                 'statement_filename': pdf_path.name,
+                'statement_date': statement_date.isoformat() if statement_date else None,
                 'account_type': account_type,
                 'transactions': unique_transactions,
                 'extraction_method': 'text_parsing',
@@ -189,6 +193,40 @@ class CleanPDFProcessor:
         
         # Fallback to current year
         return datetime.now().year
+    
+    def _extract_statement_date_from_filename(self, pdf_path: Path) -> Optional[date]:
+        """Extract statement date from filename like 'January 12, 2025.pdf'"""
+        filename = pdf_path.name
+        
+        # Try to parse full date from filename
+        # Patterns: "January 12, 2025.pdf", "Jan 12 2025.pdf", etc.
+        date_patterns = [
+            r'([A-Za-z]+)\s+(\d{1,2}),?\s+(202[0-9])',  # January 12, 2025
+            r'([A-Za-z]+)\s+(\d{1,2})\s+(202[0-9])',    # January 12 2025
+            r'(\d{1,2})\s+([A-Za-z]+)\s+(202[0-9])',    # 12 January 2025
+        ]
+        
+        for pattern in date_patterns:
+            match = re.search(pattern, filename)
+            if match:
+                try:
+                    if pattern.startswith(r'([A-Za-z]+)'):  # Month first
+                        month_str, day_str, year_str = match.groups()
+                        date_str = f"{month_str} {day_str} {year_str}"
+                    else:  # Day first
+                        day_str, month_str, year_str = match.groups()
+                        date_str = f"{month_str} {day_str} {year_str}"
+                    
+                    # Try different date formats
+                    for fmt in ['%B %d %Y', '%b %d %Y']:
+                        try:
+                            return datetime.strptime(date_str, fmt).date()
+                        except:
+                            continue
+                except:
+                    continue
+        
+        return None
     
     def _parse_bmo_date(self, date_str: str, year: int) -> Optional[date]:
         """Parse BMO date format like 'Oct 12'"""
