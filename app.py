@@ -505,18 +505,29 @@ def render_chat_section():
             try:
                 result = st.session_state.chat_handler.process_query(query)
                 
-                # Extract readable response from the result
+                # Debug: let's see what we're getting
+                st.write("DEBUG - Raw result:", result)
+                
+                # Extract readable response from the nested structure
+                response = "No response generated"
+                
                 if isinstance(result, dict):
-                    if 'summary' in result:
+                    # Check if there's a nested response dict
+                    if 'response' in result and isinstance(result['response'], dict):
+                        nested_response = result['response']
+                        if 'summary' in nested_response:
+                            response = nested_response['summary']
+                        elif 'detailed_response' in nested_response:
+                            response = nested_response['detailed_response']
+                    # Check direct fields
+                    elif 'summary' in result:
                         response = result['summary']
                     elif 'detailed_response' in result:
                         response = result['detailed_response']
                     elif 'response' in result:
-                        response = result['response']
+                        response = str(result['response'])
                     else:
                         response = str(result)
-                else:
-                    response = str(result)
                 
                 # Display response in a cleaner format
                 with st.container():
