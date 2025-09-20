@@ -19,8 +19,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 try:
     import requests
     import PyPDF2
-    from rufous_mcp.database import RufousDatabase
-    from rufous_mcp.config import Config
+    from components.database import RufousDatabase
 except ImportError as e:
     print(f"Missing dependency: {e}")
     print("Install with: pip install PyPDF2 requests")
@@ -32,9 +31,8 @@ class LocalStatementProcessor:
     
     def __init__(self, ollama_url: str = "http://localhost:11434"):
         self.ollama_url = ollama_url
-        self.config = Config()
-        pdf_config = self.config.get_pdf_config()
-        self.database = RufousDatabase(pdf_config.get('database_path'))
+        # Use the same database as the web app
+        self.database = RufousDatabase()
         
     def check_ollama(self) -> bool:
         """Check if Ollama is running and available"""

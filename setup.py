@@ -47,7 +47,7 @@ setup(
     },
     entry_points={
         "console_scripts": [
-            "rufous-mcp=rufous_mcp.minimal_server:main",
+            "rufous=app:main",
         ],
     },
     project_urls={
