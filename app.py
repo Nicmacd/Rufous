@@ -970,6 +970,11 @@ def process_uploaded_files(uploaded_files, default_account_type):
     if processed_count > 0:
         st.balloons()
         st.success(f"🎉 Successfully processed {processed_count} statement(s)!")
+        st.info("💡 Page will refresh in a moment to show your new data...")
+        
+        # Add a small delay before rerun so user can see the messages
+        import time
+        time.sleep(2)
         st.rerun()
 
 def main():
