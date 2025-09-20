@@ -109,9 +109,26 @@ class CleanPDFProcessor:
                     posting_date_str = date_match.group(2).replace('.', '').strip()
                     rest_of_line = date_match.group(3)
                     
-                    # Parse dates using the detected year
-                    trans_date = self._parse_bmo_date(trans_date_str, statement_year)
-                    posting_date = self._parse_bmo_date(posting_date_str, statement_year)
+                    # Parse dates - first parse with statement year to get month/day
+                    temp_trans_date = self._parse_bmo_date(trans_date_str, statement_year)
+                    temp_posting_date = self._parse_bmo_date(posting_date_str, statement_year)
+                    
+                    # Adjust year if needed (e.g., December transactions in January statement)
+                    if temp_trans_date:
+                        adjusted_year = self._adjust_transaction_year(
+                            temp_trans_date.month, temp_trans_date.day, statement_year, pdf_path
+                        )
+                        trans_date = self._parse_bmo_date(trans_date_str, adjusted_year)
+                    else:
+                        trans_date = temp_trans_date
+                    
+                    if temp_posting_date:
+                        adjusted_year = self._adjust_transaction_year(
+                            temp_posting_date.month, temp_posting_date.day, statement_year, pdf_path
+                        )
+                        posting_date = self._parse_bmo_date(posting_date_str, adjusted_year)
+                    else:
+                        posting_date = temp_posting_date
                     
                     if not trans_date or not posting_date:
                         i += 1
@@ -193,6 +210,25 @@ class CleanPDFProcessor:
         
         # Fallback to current year
         return datetime.now().year
+    
+    def _adjust_transaction_year(self, month: int, day: int, statement_year: int, pdf_path: Path) -> int:
+        """
+        Adjust transaction year based on statement context.
+        
+        For January statements containing December transactions,
+        those December transactions should be from the previous year.
+        """
+        filename = pdf_path.name.lower()
+        
+        # If this is a January statement and we have December transactions
+        if 'january' in filename and month == 12:
+            return statement_year - 1
+        
+        # If this is a December statement and we have January transactions  
+        if 'december' in filename and month == 1:
+            return statement_year + 1
+            
+        return statement_year
     
     def _extract_statement_date_from_filename(self, pdf_path: Path) -> Optional[date]:
         """Extract statement date from filename like 'January 12, 2025.pdf'"""
