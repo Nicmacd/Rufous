@@ -930,7 +930,18 @@ def process_uploaded_files(uploaded_files, default_account_type):
                     # Add transactions to database
                     added_count = st.session_state.database.add_transactions(transactions)
                     
-                    st.success(f"✅ {uploaded_file.name}: {added_count} transactions added to database")
+                    # Run auto-categorization
+                    try:
+                        categorized_count = st.session_state.database.auto_categorize_transactions()
+                        if categorized_count > 0:
+                            st.success(f"✅ {uploaded_file.name}: {added_count} transactions added, {categorized_count} auto-categorized")
+                        else:
+                            st.success(f"✅ {uploaded_file.name}: {added_count} transactions added")
+                            st.info("💡 No transactions auto-categorized. Visit Management → Categories to set up rules.")
+                    except Exception as e:
+                        st.success(f"✅ {uploaded_file.name}: {added_count} transactions added")
+                        st.warning(f"⚠️ Auto-categorization failed: {e}")
+                    
                     processed_count += 1
                 else:
                     st.warning(f"⚠️ {uploaded_file.name}: No transactions extracted")
@@ -958,6 +969,7 @@ def process_uploaded_files(uploaded_files, default_account_type):
     
     if processed_count > 0:
         st.balloons()
+        st.success(f"🎉 Successfully processed {processed_count} statement(s)!")
         st.rerun()
 
 def main():
