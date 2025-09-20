@@ -87,61 +87,318 @@ class ChatHandler:
             raise
     
     def process_query(self, user_query: str) -> Dict[str, Any]:
-        """Process natural language query and return results"""
+        """Process natural language query using hybrid++ approach"""
         try:
-            # Check for common patterns and use dedicated functions
-            query_lower = user_query.lower()
+            # Ultra-fast lane: Exact pattern matching for common queries
+            pattern_result = self._try_exact_patterns(user_query)
+            if pattern_result:
+                return pattern_result
             
-            # Pattern: Recent transactions with locations
-            if any(phrase in query_lower for phrase in ['where', 'location', 'recent transactions']):
-                if any(phrase in query_lower for phrase in ['recent', 'last', 'latest']):
-                    return self.get_recent_transactions_with_locations()
-                    
-            # Pattern: Location-based spending
-            location_keywords = ['in toronto', 'in kingston', 'in vancouver', 'in calgary']
-            for keyword in location_keywords:
-                if keyword in query_lower:
-                    location = keyword.replace('in ', '').title()
-                    return self.get_spending_by_location(location)
-            
-            # Fall back to AI-powered analysis for complex queries
-            query_analysis = self._analyze_query(user_query)
-            
-            if query_analysis['type'] == 'error':
-                return {
-                    'status': 'error',
-                    'message': query_analysis.get('message', 'Query analysis failed'),
-                    'query': user_query
-                }
-            
-            # Execute appropriate database operation
-            data_result = self._execute_data_query(query_analysis)
-            
-            # Generate natural language response
-            response = self._generate_response(user_query, query_analysis, data_result)
-            
-            # Save successful query to history
-            self.db.save_query(
-                query_text=user_query,
-                query_type=query_analysis['type'],
-                results_summary=response.get('summary', ''),
-                favorited=False
-            )
-            
-            return {
-                'status': 'success',
-                'query': user_query,
-                'query_type': query_analysis['type'],
-                'data': data_result,
-                'response': response,
-                'visualization_suggestion': query_analysis.get('visualization')
-            }
+            # Smart lane: Direct LLM with relevant data
+            return self._llm_with_smart_data(user_query)
             
         except Exception as e:
             logger.error(f"Query processing failed: {e}")
             return {
                 'status': 'error',
                 'message': f"I couldn't process that query: {str(e)}",
+                'query': user_query
+            }
+    
+    def _try_exact_patterns(self, user_query: str) -> Optional[Dict[str, Any]]:
+        """Try exact pattern matching for ultra-common queries"""
+        query_lower = user_query.lower()
+        
+        # Pattern: Last N transactions (e.g., "last 5 transactions", "show me my last 10 transactions")
+        last_n_match = re.search(r'(?:last|recent)\s+(\d+)\s+transaction', query_lower)
+        if last_n_match:
+            n = int(last_n_match.group(1))
+            return self.get_last_n_transactions(n)
+        
+        # Pattern: Recent transactions (general)
+        if any(phrase in query_lower for phrase in ['last transactions', 'recent transactions']) and not any(phrase in query_lower for phrase in ['where', 'location']):
+            return self.get_last_n_transactions(10)  # Default to 10
+        
+        # Pattern: Recent transactions with locations
+        if any(phrase in query_lower for phrase in ['where', 'location', 'recent transactions']):
+            if any(phrase in query_lower for phrase in ['recent', 'last', 'latest']):
+                return self.get_recent_transactions_with_locations()
+                
+        # Pattern: Location-based spending
+        location_keywords = ['in toronto', 'in kingston', 'in vancouver', 'in calgary']
+        for keyword in location_keywords:
+            if keyword in query_lower:
+                location = keyword.replace('in ', '').title()
+                return self.get_spending_by_location(location)
+        
+        return None  # No exact pattern matched
+    
+    def _smart_data_fetch(self, user_query: str) -> List[Dict[str, Any]]:
+        """Intelligently fetch relevant data based on query content"""
+        query_lower = user_query.lower()
+        
+        # Determine data scope based on query keywords
+        limit = 10  # Conservative default
+        search_term = None
+        location_filter = None
+        category_filter = None
+        start_date = None
+        end_date = None
+        
+        # Look for queries that need more comprehensive data
+        comprehensive_keywords = ['all', 'total', 'analyze', 'analysis', 'pattern', 'trend', 'summary', 'overview', 'breakdown']
+        if any(keyword in query_lower for keyword in comprehensive_keywords):
+            limit = 500  # Much larger scope for comprehensive analysis (6+ months)
+            
+        # Look for queries that explicitly want everything
+        if any(phrase in query_lower for phrase in ['all my transactions', 'all transactions', 'everything', 'complete history']):
+            limit = 1000  # Get full history
+        
+        # Extract numbers for transaction counts
+        number_matches = re.findall(r'\b(\d+)\b', query_lower)
+        if number_matches:
+            # Use the first reasonable number as limit
+            for num_str in number_matches:
+                num = int(num_str)
+                if 1 <= num <= 100:  # Reasonable transaction count
+                    limit = num
+                    break
+        
+        # Look for specific time periods (be more precise to avoid false matches)
+        if any(period in query_lower for period in ['last month only', 'past month only', 'previous month only']) or \
+           (('last month' in query_lower or 'past month' in query_lower) and 'months' not in query_lower):
+            # Get actual data date range for single month analysis
+            recent_df = self.db.get_transactions_df(limit=100)
+            if not recent_df.empty:
+                latest_date = pd.to_datetime(recent_df['date']).max().date()
+                first_of_month = latest_date.replace(day=1)
+                last_month_end = first_of_month - timedelta(days=1)
+                last_month_start = last_month_end.replace(day=1)
+                start_date = last_month_start
+                end_date = last_month_end
+                limit = max(limit, 50)  # Don't override comprehensive limits
+        
+        elif any(period in query_lower for period in ['last year', 'this year', 'past year']):
+            limit = 200  # Get more for yearly analysis
+            
+        elif any(period in query_lower for period in ['last week', 'this week']):
+            limit = 20
+            
+        # Look for spending queries (need more data for analysis)
+        if any(word in query_lower for word in ['spending', 'spent', 'expenses', 'expense', 'cost', 'budget']):
+            limit = max(limit, 100)  # Get more data for spending analysis
+            
+        # Look for comparison or superlative queries (biggest, most, least, etc.)
+        if any(word in query_lower for word in ['biggest', 'largest', 'most', 'least', 'smallest', 'top', 'bottom', 'expensive', 'cheapest']):
+            limit = max(limit, 300)  # Need more data to find real extremes across time
+            
+        # Look for location mentions
+        cities = ['toronto', 'kingston', 'vancouver', 'calgary', 'ottawa', 'montreal', 'fernie']
+        for city in cities:
+            if city in query_lower:
+                location_filter = city.title()
+                limit = 50  # Get more for location analysis
+                break
+        
+        # Look for category mentions
+        categories = ['food', 'grocery', 'gas', 'restaurant', 'coffee', 'health', 'shopping']
+        for category in categories:
+            if category in query_lower:
+                category_filter = category
+                limit = 30
+                break
+        
+        # Look for amount-based queries (but don't override comprehensive limits)
+        if any(phrase in query_lower for phrase in ['over $', 'above $', 'more than $', 'greater than $']):
+            limit = max(limit, 50)  # Get more data for filtering, but don't override larger limits
+            
+        # Look for merchant/search terms
+        if 'from ' in query_lower:
+            # Extract text after 'from'
+            from_match = re.search(r'from ([a-zA-Z\s]+)', query_lower)
+            if from_match:
+                search_term = from_match.group(1).strip()
+                limit = 20
+        
+        # Fetch the appropriate data
+        if search_term or location_filter:
+            if location_filter:
+                df = self.db.search_transactions_with_location(search_term or '', location_filter)
+            else:
+                df = self.db.search_transactions(search_term, limit=limit)
+        else:
+            df = self.db.get_transactions_df(start_date, end_date, category_filter, limit)
+        
+        # Convert to clean format for LLM (optimize for API limits)
+        clean_transactions = []
+        for txn in df.to_dict('records'):
+            # Handle potential None values safely
+            category = txn.get('category') or 'Unknown'
+            location = txn.get('location') or 'No location'
+            description = str(txn['description']) if txn['description'] else 'No description'
+            
+            clean_transactions.append({
+                'date': str(txn['date']).split()[0],  # Just date part
+                'description': description[:40],  # Truncate long descriptions
+                'amount': txn['amount'],
+                'category': category[:20],  # Truncate categories
+                'location': location[:30]  # Truncate locations
+            })
+        
+        # If we have too much data for the API, create a summary approach
+        if len(clean_transactions) > 100:
+            # For large datasets, send summary + sample instead of all data
+            summary_data = self._create_transaction_summary(clean_transactions)
+            return summary_data
+        
+        return clean_transactions
+    
+    def _create_transaction_summary(self, transactions: List[Dict]) -> List[Dict]:
+        """Create a summary representation for large datasets"""
+        import pandas as pd
+        
+        # Convert to DataFrame for analysis
+        df = pd.DataFrame(transactions)
+        
+        # Create summary statistics
+        summary = []
+        
+        # Add date range info
+        summary.append({
+            'type': 'summary',
+            'date_range': f"{df['date'].min()} to {df['date'].max()}",
+            'total_transactions': len(transactions),
+            'total_amount': df['amount'].sum(),
+            'spending_total': df[df['amount'] < 0]['amount'].sum() if (df['amount'] < 0).any() else 0
+        })
+        
+        # Add monthly breakdown
+        df['month'] = df['date'].str[:7]  # YYYY-MM
+        monthly = df.groupby('month').agg({
+            'amount': ['count', 'sum'],
+            'date': 'first'
+        }).round(2)
+        
+        for month in monthly.index:
+            summary.append({
+                'type': 'monthly_summary',
+                'month': month,
+                'transaction_count': int(monthly.loc[month, ('amount', 'count')]),
+                'total_amount': float(monthly.loc[month, ('amount', 'sum')])
+            })
+        
+        # Add category breakdown (top categories)
+        if 'category' in df.columns:
+            cat_summary = df[df['amount'] < 0].groupby('category')['amount'].sum().sort_values().head(10)
+            for cat, amount in cat_summary.items():
+                summary.append({
+                    'type': 'category_summary',
+                    'category': cat,
+                    'total_spent': float(amount)
+                })
+        
+        # Add sample transactions (recent ones)
+        recent_samples = transactions[:20]  # Most recent 20
+        for txn in recent_samples:
+            txn['type'] = 'sample_transaction'
+            summary.append(txn)
+        
+        return summary
+    
+    def _llm_with_smart_data(self, user_query: str) -> Dict[str, Any]:
+        """Send query with relevant clean data directly to LLM"""
+        try:
+            # Get relevant data
+            transactions = self._smart_data_fetch(user_query)
+            
+            if not transactions:
+                return {
+                    'status': 'success',
+                    'query': user_query,
+                    'query_type': 'no_data',
+                    'data': {'transactions': [], 'count': 0},
+                    'response': {
+                        'summary': 'No transactions found',
+                        'detailed_response': 'I couldn\'t find any transactions matching your query.',
+                        'key_insights': ['No transaction data available']
+                    }
+                }
+            
+            # Create system prompt for financial analysis
+            system_prompt = """You are a helpful financial assistant. Answer user questions about their transaction data precisely and conversationally.
+
+Rules:
+1. Answer based ONLY on the provided transaction data
+2. Be specific with numbers, dates, and amounts
+3. If asked for N items, return exactly N items
+4. Format currency as $X.XX
+5. Return response as JSON with: summary, detailed_response, key_insights"""
+            
+            # Create user prompt with clean data
+            user_prompt = f"""Transaction Data:
+{json.dumps(transactions, indent=2)}
+
+User Question: {user_query}
+
+Please analyze this data and answer the user's question. Return your response as JSON with:
+- summary: Brief one-line summary
+- detailed_response: Detailed answer to their question  
+- key_insights: Array of 2-3 insights from the data"""
+            
+            messages = [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ]
+            
+            # Call LLM
+            response_text = self._call_groq_api(messages, max_tokens=500, temperature=0.3)
+            
+            # Parse JSON response
+            json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
+            if json_match:
+                try:
+                    response_data = json.loads(json_match.group(0))
+                except json.JSONDecodeError as e:
+                    logger.warning(f"JSON parsing failed: {e}")
+                    # Fallback if JSON parsing fails
+                    response_data = {
+                        'summary': 'Analysis complete',
+                        'detailed_response': response_text.replace('\n', ' ').replace('\t', ' '),
+                        'key_insights': []
+                    }
+            else:
+                # Fallback if no JSON found
+                response_data = {
+                    'summary': 'Analysis complete',
+                    'detailed_response': response_text.replace('\n', ' ').replace('\t', ' '),
+                    'key_insights': []
+                }
+            
+            # Save to query history
+            self.db.save_query(
+                query_text=user_query,
+                query_type='llm_analysis',
+                results_summary=response_data.get('summary', ''),
+                favorited=False
+            )
+            
+            return {
+                'status': 'success',
+                'query': user_query,
+                'query_type': 'llm_analysis',
+                'data': {
+                    'transactions': transactions,
+                    'count': len(transactions),
+                    'data_scope': f"Analyzed {len(transactions)} transactions"
+                },
+                'response': response_data
+            }
+            
+        except Exception as e:
+            logger.error(f"LLM analysis failed: {e}")
+            return {
+                'status': 'error',
+                'message': f"I couldn't analyze your data: {str(e)}",
                 'query': user_query
             }
     
@@ -519,4 +776,67 @@ Generate helpful response as JSON:
             return {
                 'status': 'error',
                 'message': f"Failed to analyze location spending: {str(e)}"
+            }
+    
+    def get_last_n_transactions(self, n: int = 5) -> Dict[str, Any]:
+        """Get the last N transactions - dedicated function for simple transaction lists"""
+        try:
+            df = self.db.get_transactions_df(limit=n)
+            
+            if df.empty:
+                return {
+                    'status': 'success',
+                    'query_type': 'last_transactions',
+                    'data': {
+                        'transactions': [],
+                        'count': 0
+                    },
+                    'response': {
+                        'summary': 'No transactions found',
+                        'detailed_response': 'No transactions were found in your account.',
+                        'key_insights': ['No transaction history available']
+                    }
+                }
+            
+            transactions = df.to_dict('records')
+            total_amount = df['amount'].sum()
+            
+            # Format transactions for display
+            formatted_transactions = []
+            for i, txn in enumerate(transactions, 1):
+                formatted_transactions.append({
+                    'rank': i,
+                    'date': txn['date'],
+                    'description': txn['description'],
+                    'amount': txn['amount'],
+                    'location': txn.get('location', 'No location'),
+                    'category': txn.get('category', 'Uncategorized')
+                })
+            
+            return {
+                'status': 'success',
+                'query_type': 'last_transactions',
+                'data': {
+                    'transactions': formatted_transactions,
+                    'count': len(transactions),
+                    'total_amount': total_amount,
+                    'date_range': f"{df['date'].min()} to {df['date'].max()}",
+                    'requested_count': n
+                },
+                'response': {
+                    'summary': f"Here are your last {len(transactions)} transactions",
+                    'detailed_response': f"Showing your {len(transactions)} most recent transactions from {df['date'].min()} to {df['date'].max()}. Total amount: ${total_amount:.2f}",
+                    'key_insights': [
+                        f"Most recent: {transactions[0]['description']} for ${transactions[0]['amount']:.2f}" if transactions else "No transactions",
+                        f"Date range: {df['date'].min()} to {df['date'].max()}",
+                        f"Total amount: ${total_amount:.2f}"
+                    ]
+                }
+            }
+            
+        except Exception as e:
+            logger.error(f"Failed to get last {n} transactions: {e}")
+            return {
+                'status': 'error',
+                'message': f"Failed to retrieve last {n} transactions: {str(e)}"
             }
