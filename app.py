@@ -912,13 +912,28 @@ def process_uploaded_files(uploaded_files, default_account_type):
             )
             
             if result['status'] == 'success':
-                # Handle different result structures
-                transactions_count = result.get('transactions_added', 
-                                               result.get('total_transactions',
-                                                         result.get('transaction_count', 
-                                                                   len(result.get('transactions', [])))))
-                st.success(f"✅ {uploaded_file.name}: {transactions_count} transactions added")
-                processed_count += 1
+                # Store in database (this was missing!)
+                transactions = result['transactions']
+                if transactions:
+                    # Add statement record
+                    statement_date = transactions[0]['date'] if transactions else None
+                    total_amount = sum(t['amount'] for t in transactions)
+                    
+                    statement_id = st.session_state.database.add_statement(
+                        filename=uploaded_file.name,
+                        statement_date=statement_date,
+                        account_type=default_account_type,
+                        transaction_count=len(transactions),
+                        total_amount=total_amount
+                    )
+                    
+                    # Add transactions to database
+                    added_count = st.session_state.database.add_transactions(transactions)
+                    
+                    st.success(f"✅ {uploaded_file.name}: {added_count} transactions added to database")
+                    processed_count += 1
+                else:
+                    st.warning(f"⚠️ {uploaded_file.name}: No transactions extracted")
             else:
                 error_msg = result.get('message', result.get('error', 'Processing failed'))
                 st.error(f"❌ {uploaded_file.name}: {error_msg}")
