@@ -530,7 +530,8 @@ def render_chat_section():
     if st.button("🔍 Analyze", type="primary") and query:
         with st.spinner("Analyzing your financial data..."):
             try:
-                response = st.session_state.chat_handler.handle_query(query)
+                result = st.session_state.chat_handler.process_query(query)
+                response = result.get('response', 'No response generated')
                 
                 # Display response
                 st.markdown('<div class="chat-message">', unsafe_allow_html=True)
