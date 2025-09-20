@@ -27,7 +27,7 @@ st.set_page_config(
     page_title="Rufous v2 - Financial Analysis",
     page_icon="📊",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
 # Custom CSS
@@ -93,160 +93,8 @@ def initialize_session_state():
     if 'processed_files' not in st.session_state:
         st.session_state.processed_files = []
 
-def render_sidebar():
-    """Render sidebar with controls and stats"""
-    with st.sidebar:
-        st.markdown("### 🏦 Rufous v2")
-        st.markdown("Personal Financial Analysis")
-        
-        # Database stats
-        try:
-            stats = st.session_state.database.get_database_stats()
-            
-            st.markdown("### 📊 Quick Stats")
-            col1, col2 = st.columns(2)
-            with col1:
-                st.metric("Transactions", stats['total_transactions'])
-                st.metric("Statements", stats['total_statements'])
-            with col2:
-                st.metric("Total Spent", f"${stats['total_spent']:,.2f}")
-                st.metric("Net Change", f"${stats['net_worth_change']:,.2f}")
-        
-        except Exception as e:
-            st.warning("Could not load database stats")
-            logger.error(f"Stats loading error: {e}")
-        
-        st.markdown("---")
-        
-        # Quick actions
-        st.markdown("### ⚡ Quick Actions")
-        if st.button("📈 Dashboard View", use_container_width=True):
-            st.session_state.current_view = 'dashboard'
-        
-        if st.button("💬 Chat Analysis", use_container_width=True):
-            st.session_state.current_view = 'chat'
-        
-        if st.button("📄 Process PDFs", use_container_width=True):
-            st.session_state.current_view = 'upload'
-        
-        if st.button("🎯 Manage Categories", use_container_width=True):
-            st.session_state.current_view = 'categories'
-        
-        # Favorite queries
-        try:
-            favorites = st.session_state.database.get_favorite_queries(limit=5)
-            if favorites:
-                st.markdown("### ⭐ Favorite Queries")
-                for fav in favorites:
-                    if st.button(f"🔍 {fav['query_text'][:30]}...", key=f"fav_{fav['id']}"):
-                        st.session_state.quick_query = fav['query_text']
-                        st.session_state.current_view = 'chat'
-        except:
-            pass
-        
-        # Quick categorization in sidebar
-        render_quick_categorize(st.session_state.database, st.session_state.category_manager)
+# Sidebar removed for cleaner interface
 
-def render_pdf_upload():
-    """Render PDF upload and processing section"""
-    st.markdown('<div class="upload-section">', unsafe_allow_html=True)
-    st.markdown("### 📄 Upload Bank Statements")
-    
-    if st.session_state.pdf_processor is None:
-        st.error("PDF processor not available. Please check that pdfplumber is installed.")
-        st.markdown("""
-        **Setup Instructions:**
-        1. Install dependencies: `pip install pdfplumber`
-        2. For OCR fallback: `brew install poppler` (macOS) or `sudo apt-get install poppler-utils` (Linux)
-        """)
-        st.markdown('</div>', unsafe_allow_html=True)
-        return
-    
-    # File uploader
-    uploaded_files = st.file_uploader(
-        "Choose PDF statements",
-        type=['pdf'],
-        accept_multiple_files=True,
-        help="Upload one or more bank statement PDFs"
-    )
-    
-    if uploaded_files:
-        col1, col2 = st.columns([3, 1])
-        
-        with col1:
-            # Account type selection
-            default_account_type = st.selectbox(
-                "Default account type",
-                ["debit", "credit"],
-                help="Select the default account type for uploaded statements"
-            )
-            
-        
-        with col2:
-            process_button = st.button(
-                "🚀 Process Statements",
-                type="primary",
-                disabled=len(uploaded_files) == 0
-            )
-        
-        if process_button and uploaded_files:
-            process_uploaded_files(uploaded_files, default_account_type)
-    
-    # Show processing history
-    if st.session_state.processed_files:
-        st.markdown("### 📋 Processing History")
-        for result in st.session_state.processed_files[-5:]:  # Show last 5
-            status_icon = "✅" if result['status'] == 'success' else "❌"
-            st.markdown(f"{status_icon} **{result['filename']}** - {result.get('total_transactions', 0)} transactions")
-    
-    # Manual import section for when AI fails
-    with st.expander("💻 Manual Import (if AI extraction fails)", expanded=False):
-        st.markdown("""
-        **If PDF extraction fails, you can:**
-        1. Upload your PDF to ChatGPT or Claude
-        2. Ask it to extract transactions as JSON
-        3. Paste the JSON below
-        """)
-        
-        col1, col2 = st.columns([3, 1])
-        with col1:
-            json_input = st.text_area(
-                "Paste transaction JSON here:",
-                height=150,
-                placeholder='[{"date": "2024-11-13", "description": "MERCHANT NAME", "amount": -11.43}, ...]'
-            )
-            statement_name = st.text_input("Statement filename:", value="manual_import.json")
-        
-        with col2:
-            account_type_manual = st.selectbox("Account type:", ["credit", "debit"], key="manual_account")
-            
-        if st.button("📥 Import JSON Transactions") and json_input.strip():
-            try:
-                from components.manual_import import ManualTransactionImporter
-                importer = ManualTransactionImporter()
-                result = importer.import_from_json(json_input, statement_name, account_type_manual)
-                
-                if result['status'] == 'success':
-                    transactions = result['transactions']
-                    
-                    # Add to database
-                    statement_id = st.session_state.database.add_statement(
-                        filename=statement_name,
-                        statement_date=transactions[0]['date'] if transactions else None,
-                        account_type=account_type_manual,
-                        transaction_count=len(transactions),
-                        total_amount=sum(t['amount'] for t in transactions)
-                    )
-                    
-                    added_count = st.session_state.database.add_transactions(transactions)
-                    st.success(f"✅ Successfully imported {added_count} transactions!")
-                else:
-                    st.error(f"❌ Import failed: {result['message']}")
-                    
-            except Exception as e:
-                st.error(f"❌ Import error: {str(e)}")
-    
-    st.markdown('</div>', unsafe_allow_html=True)
 
 def process_uploaded_files(uploaded_files: List, default_account_type: str):
     """Process uploaded PDF files"""
@@ -350,14 +198,7 @@ def process_uploaded_files(uploaded_files: List, default_account_type: str):
     
     st.success(f"Processing Summary: {successful}/{len(results)} files processed successfully. {total_transactions} total transactions added.")
 
-def render_chat_interface():
-    """Render chat interface for natural language queries"""
-    st.markdown("### 💬 Financial Chat Assistant")
-    
-    if st.session_state.chat_handler is None:
-        st.error("Chat handler not available. Please check your GROQ_API_KEY environment variable.")
-        st.info("💡 Get a free API key at: https://console.groq.com/")
-        return
+# Old render functions removed - now using unified dashboard
     
     # Check for pre-filled queries (from sidebar or suggestions)
     user_query = None
@@ -589,8 +430,314 @@ def render_dashboard():
         st.error(f"Dashboard error: {str(e)}")
         logger.error(f"Dashboard error: {e}")
 
+def render_unified_dashboard():
+    """Render the unified main dashboard with all key features"""
+    
+    # PDF Upload Section
+    st.markdown("### 📄 Upload Bank Statements")
+    with st.container():
+        st.markdown('<div class="upload-section">', unsafe_allow_html=True)
+        
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            uploaded_files = st.file_uploader(
+                "Drop your PDF bank statements here",
+                type=['pdf'],
+                accept_multiple_files=True,
+                help="Upload multiple PDF statements to process them all at once"
+            )
+        
+        with col2:
+            # Always credit since user only uploads credit statements
+            default_account_type = "credit"
+            st.info("💳 Credit Card Statements")
+        
+        if uploaded_files and st.session_state.pdf_processor:
+            if st.button("🚀 Process All Statements", type="primary"):
+                process_uploaded_files(uploaded_files, default_account_type)
+        
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    st.markdown("---")
+    
+    # Financial Overview Section
+    st.markdown("### 📊 Financial Overview")
+    
+    try:
+        # Get monthly data for visualization  
+        monthly_data = None  # Simplified for now - will implement charts later
+        
+        # Key metrics in a clean layout
+        stats = st.session_state.database.get_database_stats()
+        
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            st.metric("Total Transactions", stats['total_transactions'])
+        with col2:
+            st.metric("Total Spent", f"${stats['total_spent']:,.2f}")
+        with col3:
+            st.metric("Net Change", f"${stats['net_worth_change']:,.2f}")
+        with col4:
+            st.metric("Statements Processed", stats['total_statements'])
+        
+        if stats['total_transactions'] == 0:
+            st.info("📈 Upload your first credit card statement to see financial insights!")
+            
+    except Exception as e:
+        st.error(f"Error loading financial overview: {e}")
+        logger.error(f"Dashboard overview error: {e}")
+    
+    st.markdown("---")
+    
+    # Chat Analysis Section
+    st.markdown("### 💬 Chat Analysis")
+    render_chat_section()
+
+def render_chat_section():
+    """Render the chat analysis section for the unified dashboard"""
+    
+    if not st.session_state.chat_handler:
+        st.warning("💡 Chat analysis requires GROQ_API_KEY environment variable")
+        return
+    
+    # Quick query buttons
+    st.markdown("#### Quick Insights")
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        if st.button("💰 Monthly Spending", use_container_width=True):
+            st.session_state.quick_query = "How much did I spend this month?"
+    
+    with col2:
+        if st.button("🏪 Top Merchants", use_container_width=True):
+            st.session_state.quick_query = "What are my top 5 merchants by spending?"
+    
+    with col3:
+        if st.button("📈 Spending Trends", use_container_width=True):
+            st.session_state.quick_query = "Show me my spending trends over time"
+    
+    with col4:
+        if st.button("🎯 Category Breakdown", use_container_width=True):
+            st.session_state.quick_query = "Break down my spending by category"
+    
+    # Chat input
+    query = st.text_input(
+        "Ask about your finances:",
+        value=getattr(st.session_state, 'quick_query', ''),
+        placeholder="e.g., How much did I spend on food last month?",
+        key="chat_input"
+    )
+    
+    if st.button("🔍 Analyze", type="primary") and query:
+        with st.spinner("Analyzing your financial data..."):
+            try:
+                response = st.session_state.chat_handler.handle_query(query)
+                
+                # Display response
+                st.markdown('<div class="chat-message">', unsafe_allow_html=True)
+                st.markdown(f"**You:** {query}")
+                st.markdown(f"**Analysis:** {response}")
+                st.markdown('</div>', unsafe_allow_html=True)
+                
+                # Add to chat history
+                st.session_state.chat_history.append({
+                    'query': query,
+                    'response': response,
+                    'timestamp': datetime.now()
+                })
+                
+                # Clear quick query
+                if hasattr(st.session_state, 'quick_query'):
+                    del st.session_state.quick_query
+                
+            except Exception as e:
+                st.error(f"Analysis failed: {e}")
+                logger.error(f"Chat analysis error: {e}")
+    
+    # Recent chat history (last 3)
+    if st.session_state.chat_history:
+        st.markdown("#### Recent Analysis")
+        for chat in st.session_state.chat_history[-3:]:
+            with st.expander(f"🔍 {chat['query'][:50]}..."):
+                st.markdown(f"**Query:** {chat['query']}")
+                st.markdown(f"**Response:** {chat['response']}")
+                st.caption(f"Asked: {chat['timestamp'].strftime('%Y-%m-%d %H:%M')}")
+
+def render_management_tab():
+    """Render the management tab with categories and transactions"""
+    
+    # Sub-tabs for management functions
+    mgmt_tab1, mgmt_tab2 = st.tabs(["🎯 Category Management", "📋 Transaction List"])
+    
+    with mgmt_tab1:
+        st.markdown("### 🎯 Category Management")
+        render_category_management(st.session_state.category_manager)
+    
+    with mgmt_tab2:
+        st.markdown("### 📋 All Transactions")
+        render_transaction_list()
+
+def render_transaction_list():
+    """Render searchable transaction list"""
+    try:
+        # Get all transactions using the available method
+        transactions_df = st.session_state.database.get_transactions_df()
+        transactions = transactions_df.to_dict('records') if not transactions_df.empty else []
+        
+        if not transactions:
+            st.info("No transactions found. Upload some bank statements first!")
+            return
+        
+        # Convert to DataFrame for better display
+        import pandas as pd
+        df = pd.DataFrame(transactions)
+        
+        # Filters
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            # Date range filter
+            if 'date' in df.columns:
+                df['date'] = pd.to_datetime(df['date'])
+                min_date = df['date'].min().date()
+                max_date = df['date'].max().date()
+                
+                date_range = st.date_input(
+                    "Date Range",
+                    value=(min_date, max_date),
+                    min_value=min_date,
+                    max_value=max_date
+                )
+        
+        with col2:
+            # Category filter
+            categories = df['category'].unique() if 'category' in df.columns else []
+            selected_categories = st.multiselect(
+                "Categories",
+                options=categories,
+                default=[]
+            )
+        
+        with col3:
+            # Amount filter
+            if 'amount' in df.columns:
+                min_amount = float(df['amount'].min())
+                max_amount = float(df['amount'].max())
+                
+                amount_range = st.slider(
+                    "Amount Range",
+                    min_value=min_amount,
+                    max_value=max_amount,
+                    value=(min_amount, max_amount),
+                    step=0.01
+                )
+        
+        # Apply filters
+        filtered_df = df.copy()
+        
+        if len(date_range) == 2:
+            start_date, end_date = date_range
+            filtered_df = filtered_df[
+                (filtered_df['date'].dt.date >= start_date) & 
+                (filtered_df['date'].dt.date <= end_date)
+            ]
+        
+        if selected_categories:
+            filtered_df = filtered_df[filtered_df['category'].isin(selected_categories)]
+        
+        if 'amount' in filtered_df.columns:
+            filtered_df = filtered_df[
+                (filtered_df['amount'] >= amount_range[0]) & 
+                (filtered_df['amount'] <= amount_range[1])
+            ]
+        
+        # Display results
+        st.markdown(f"**Showing {len(filtered_df)} of {len(df)} transactions**")
+        
+        # Format for display
+        display_columns = ['date', 'description', 'amount', 'category', 'merchant']
+        display_df = filtered_df[display_columns].copy()
+        
+        if 'date' in display_df.columns:
+            display_df['date'] = display_df['date'].dt.strftime('%Y-%m-%d')
+        
+        if 'amount' in display_df.columns:
+            display_df['amount'] = display_df['amount'].apply(lambda x: f"${x:.2f}")
+        
+        # Display table
+        st.dataframe(
+            display_df,
+            use_container_width=True,
+            hide_index=True
+        )
+        
+        # Export option
+        if st.button("📥 Export to CSV"):
+            csv = filtered_df.to_csv(index=False)
+            st.download_button(
+                label="Download CSV",
+                data=csv,
+                file_name=f"transactions_{datetime.now().strftime('%Y%m%d')}.csv",
+                mime="text/csv"
+            )
+            
+    except Exception as e:
+        st.error(f"Error loading transactions: {e}")
+        logger.error(f"Transaction list error: {e}")
+
+def process_uploaded_files(uploaded_files, default_account_type):
+    """Process multiple uploaded PDF files"""
+    progress_bar = st.progress(0)
+    status_text = st.empty()
+    
+    total_files = len(uploaded_files)
+    processed_count = 0
+    
+    for i, uploaded_file in enumerate(uploaded_files):
+        status_text.text(f"Processing {uploaded_file.name}...")
+        progress_bar.progress((i) / total_files)
+        
+        try:
+            # Save temporary file
+            temp_path = Path("temp") / uploaded_file.name
+            temp_path.parent.mkdir(exist_ok=True)
+            
+            with open(temp_path, "wb") as f:
+                f.write(uploaded_file.getbuffer())
+            
+            # Check if already processed
+            if st.session_state.database.is_statement_processed(uploaded_file.name):
+                st.warning(f"Statement {uploaded_file.name} already processed. Skipping.")
+                continue
+            
+            # Process PDF
+            result = st.session_state.pdf_processor.process_pdf_statement(
+                temp_path, 
+                default_account_type
+            )
+            
+            if result['status'] == 'success':
+                st.success(f"✅ {uploaded_file.name}: {result['transactions_added']} transactions added")
+                processed_count += 1
+            else:
+                st.error(f"❌ {uploaded_file.name}: {result['message']}")
+            
+            # Clean up
+            temp_path.unlink(missing_ok=True)
+            
+        except Exception as e:
+            st.error(f"❌ {uploaded_file.name}: Processing failed - {e}")
+            logger.error(f"File processing error: {e}")
+    
+    progress_bar.progress(1.0)
+    status_text.text(f"Complete! Processed {processed_count} of {total_files} files.")
+    
+    if processed_count > 0:
+        st.balloons()
+        st.rerun()
+
 def main():
-    """Main application"""
+    """Main application with unified interface"""
     # Initialize session state
     initialize_session_state()
     
@@ -598,20 +745,16 @@ def main():
     st.markdown('<h1 class="main-header">📊 Rufous v2</h1>', unsafe_allow_html=True)
     st.markdown('<p style="text-align: center; color: #666;">Personal Financial Analysis with Natural Language Queries</p>', unsafe_allow_html=True)
     
-    # Sidebar
-    render_sidebar()
+    # No sidebar - cleaner interface
     
-    # Main content based on current view
-    current_view = getattr(st.session_state, 'current_view', 'dashboard')
+    # Main tabs
+    tab1, tab2 = st.tabs(["🏠 Dashboard", "⚙️ Management"])
     
-    if current_view == 'upload':
-        render_pdf_upload()
-    elif current_view == 'chat':
-        render_chat_interface()
-    elif current_view == 'categories':
-        render_category_management(st.session_state.category_manager)
-    else:  # dashboard
-        render_dashboard()
+    with tab1:
+        render_unified_dashboard()
+    
+    with tab2:
+        render_management_tab()
     
     # Footer
     st.markdown("---")
