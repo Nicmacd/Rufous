@@ -504,7 +504,19 @@ def render_chat_section():
         with st.spinner("Analyzing your financial data..."):
             try:
                 result = st.session_state.chat_handler.process_query(query)
-                response = result.get('response', 'No response generated')
+                
+                # Extract readable response from the result
+                if isinstance(result, dict):
+                    if 'summary' in result:
+                        response = result['summary']
+                    elif 'detailed_response' in result:
+                        response = result['detailed_response']
+                    elif 'response' in result:
+                        response = result['response']
+                    else:
+                        response = str(result)
+                else:
+                    response = str(result)
                 
                 # Display response in a cleaner format
                 with st.container():
