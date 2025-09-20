@@ -459,6 +459,11 @@ def render_unified_dashboard():
             if uploaded_files and st.session_state.pdf_processor:
                 if st.button("🚀 Process", type="primary", use_container_width=True):
                     process_uploaded_files(uploaded_files, default_account_type)
+    
+    # Monthly spending breakdown under the chat
+    st.markdown("---")
+    st.markdown("### 📊 Monthly Spending Breakdown")
+    render_monthly_spending_chart()
 
 def render_chat_section():
     """Render the chat analysis section for the unified dashboard"""
@@ -630,6 +635,89 @@ def render_chat_section():
                 st.markdown(f"**Query:** {chat['query']}")
                 st.markdown(f"**Response:** {chat['response']}")
                 st.caption(f"Asked: {chat['timestamp'].strftime('%Y-%m-%d %H:%M')}")
+
+def render_monthly_spending_chart():
+    """Render monthly spending breakdown chart for the current year"""
+    try:
+        # Get monthly spending data
+        import sqlite3
+        conn = sqlite3.connect(st.session_state.database.db_path)
+        cursor = conn.cursor()
+        
+        # Query monthly spending for current year
+        from datetime import datetime
+        current_year = datetime.now().year
+        
+        cursor.execute("""
+            SELECT 
+                strftime('%Y-%m', date) as month,
+                SUM(amount) as total_spent
+            FROM transactions 
+            WHERE amount > 0 
+            AND is_transfer = FALSE 
+            AND strftime('%Y', date) = ?
+            GROUP BY strftime('%Y-%m', date)
+            ORDER BY month
+        """, (str(current_year),))
+        
+        monthly_data = cursor.fetchall()
+        conn.close()
+        
+        if not monthly_data:
+            st.info(f"No spending data found for {current_year}. Upload some statements to see your monthly breakdown!")
+            return
+        
+        # Convert to DataFrame for plotting
+        import pandas as pd
+        df = pd.DataFrame(monthly_data, columns=['Month', 'Amount'])
+        
+        # Format month names nicely
+        df['Month'] = pd.to_datetime(df['Month']).dt.strftime('%b %Y')
+        
+        # Create the chart
+        import plotly.express as px
+        fig = px.bar(
+            df, 
+            x='Month', 
+            y='Amount',
+            title=f'Monthly Spending - {current_year}',
+            labels={'Amount': 'Amount Spent ($)', 'Month': 'Month'},
+            color='Amount',
+            color_continuous_scale='Blues'
+        )
+        
+        # Format y-axis as currency
+        fig.update_layout(
+            yaxis_tickformat='$,.0f',
+            showlegend=False,
+            height=400,
+            xaxis_tickangle=-45
+        )
+        
+        # Add value labels on bars
+        fig.update_traces(
+            texttemplate='$%{y:,.0f}',
+            textposition='outside'
+        )
+        
+        st.plotly_chart(fig, use_container_width=True)
+        
+        # Show summary stats
+        total_spent = df['Amount'].sum()
+        avg_monthly = df['Amount'].mean()
+        months_with_data = len(df)
+        
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("Total Spent", f"${total_spent:,.2f}")
+        with col2:
+            st.metric("Average Monthly", f"${avg_monthly:,.2f}")
+        with col3:
+            st.metric("Months with Data", months_with_data)
+            
+    except Exception as e:
+        st.error(f"Error loading monthly spending data: {e}")
+        logger.error(f"Monthly spending chart error: {e}")
 
 def create_manual_response(result):
     """Create a manual response when AI generation fails"""
