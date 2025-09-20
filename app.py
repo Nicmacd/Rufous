@@ -503,8 +503,9 @@ def render_chat_section():
             try:
                 result = st.session_state.chat_handler.process_query(query)
                 
-                # Debug: Show what we're getting
-                st.write("DEBUG - Result structure:", result)
+                # Debug: Show what we're getting (developer requested)
+                with st.expander("🔍 Debug - Query Details", expanded=False):
+                    st.json(result)
                 
                 # Extract readable response from the nested structure
                 response = "No response generated"
@@ -529,19 +530,29 @@ def render_chat_section():
                         # AI response failed, create manual response from data
                         response = create_manual_response(result)
                 
-                # Clean up concatenated text issues
+                # Clean up concatenated text issues (more aggressive)
                 if isinstance(response, str):
                     import re
-                    # Fix common concatenation issues
-                    response = re.sub(r'(\d+),(\d+)', r'\1,\2', response)  # Fix number formatting
+                    # Fix bullet point formatting first
+                    response = re.sub(r'•([A-Z])', r'• \1', response)  # "•Uncategorized" -> "• Uncategorized"
+                    response = re.sub(r'(\))•', r')\n• ', response)  # "%)•" -> "%)\n• "
+                    
+                    # Fix number formatting
+                    response = re.sub(r'(\d+),(\d+)', r'\1,\2', response)  # Keep commas in numbers
                     response = re.sub(r'(\d+)([a-zA-Z])', r'\1 \2', response)  # "2025broken" -> "2025 broken"
-                    response = re.sub(r'([a-z])([A-Z])', r'\1 \2', response)  # "categoryThat" -> "category That"
                     response = re.sub(r'([a-zA-Z])(\d+)', r'\1 \2', response)  # "year2025" -> "year 2025"
+                    
+                    # Fix currency and percentage formatting
+                    response = re.sub(r'(\$\d+(?:\.\d+)?)([a-zA-Z])', r'\1 \2', response)  # "$1,953.14The" -> "$1,953.14 The"
+                    response = re.sub(r'(\d+(?:\.\d+)?%?)([A-Z])', r'\1 \2', response)  # "22.9•Shopping" -> "22.9 •Shopping"
+                    
+                    # Fix punctuation spacing
                     response = re.sub(r'([.,])([a-zA-Z])', r'\1 \2', response)  # ",broken" -> ", broken"
                     response = re.sub(r'([a-zA-Z])([.,])', r'\1\2', response)  # "year ," -> "year,"
-                    # Fix specific concatenations
-                    response = re.sub(r'totaling(\d)', r'totaling \1', response)
-                    response = re.sub(r'(\$\d+(?:\.\d+)?)([a-zA-Z])', r'\1 \2', response)  # "$1,953.14The" -> "$1,953.14 The"
+                    
+                    # Fix parentheses
+                    response = re.sub(r'(\d+(?:\.\d+)?)(\()', r'\1 \2', response)  # "794.60(" -> "794.60 ("
+                    response = re.sub(r'(\))([A-Z])', r'\1 \2', response)  # ")Bills" -> ") Bills"
                 
                 # Display response in a cleaner format
                 with st.container():
