@@ -431,37 +431,34 @@ def render_dashboard():
         logger.error(f"Dashboard error: {e}")
 
 def render_unified_dashboard():
-    """Render the unified main dashboard with all key features"""
+    """Render the unified main dashboard with chat as primary focus"""
     
-    # PDF Upload Section
-    st.markdown("### 📄 Upload Bank Statements")
-    with st.container():
-        st.markdown('<div class="upload-section">', unsafe_allow_html=True)
-        
-        col1, col2 = st.columns([3, 1])
-        with col1:
+    # Main layout: Chat on left (2/3), Upload on right (1/3)
+    col1, col2 = st.columns([2, 1])
+    
+    with col1:
+        # Chat Analysis Section - Primary focus
+        st.markdown("### 💬 Financial Chat")
+        render_chat_section()
+    
+    with col2:
+        # PDF Upload Section - Compact on the right
+        st.markdown("### 📄 Upload")
+        with st.container():
             uploaded_files = st.file_uploader(
-                "Drop your PDF bank statements here",
+                "Drop PDF statements",
                 type=['pdf'],
                 accept_multiple_files=True,
-                help="Upload multiple PDF statements to process them all at once"
+                help="Upload credit card statements",
+                label_visibility="collapsed"
             )
-        
-        with col2:
+            
             # Always credit since user only uploads credit statements
             default_account_type = "credit"
-        
-        if uploaded_files and st.session_state.pdf_processor:
-            if st.button("🚀 Process All Statements", type="primary"):
-                process_uploaded_files(uploaded_files, default_account_type)
-        
-        st.markdown('</div>', unsafe_allow_html=True)
-    
-    st.markdown("---")
-    
-    # Chat Analysis Section
-    st.markdown("### 💬 Chat Analysis")
-    render_chat_section()
+            
+            if uploaded_files and st.session_state.pdf_processor:
+                if st.button("🚀 Process", type="primary", use_container_width=True):
+                    process_uploaded_files(uploaded_files, default_account_type)
 
 def render_chat_section():
     """Render the chat analysis section for the unified dashboard"""
@@ -848,9 +845,8 @@ def main():
     # Initialize session state
     initialize_session_state()
     
-    # Header
-    st.markdown('<h1 class="main-header">📊 Rufous v2</h1>', unsafe_allow_html=True)
-    st.markdown('<p style="text-align: center; color: #666;">Personal Financial Analysis with Natural Language Queries</p>', unsafe_allow_html=True)
+    # Compact header
+    st.markdown('<h2 style="margin-bottom: 0.5rem;">📊 Rufous v2</h2>', unsafe_allow_html=True)
     
     # No sidebar - cleaner interface
     
