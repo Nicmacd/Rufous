@@ -506,6 +506,25 @@ def render_chat_section():
                 # Debug: Show what we're getting
                 st.write("DEBUG - Result structure:", result)
                 
+                # For now, let's create a better response from the data directly
+                if (isinstance(result, dict) and 'data' in result and 
+                    'results' in result['data'] and result['data']['results']):
+                    
+                    results = result['data']['results']
+                    total_spent = sum(float(r.get('total_spent', 0)) for r in results)
+                    
+                    # Create a readable response from the data
+                    response_parts = [f"You spent a total of ${total_spent:,.2f} in 2025, broken down by category:"]
+                    
+                    for r in results:
+                        category = r.get('category') or 'Uncategorized'
+                        amount = float(r.get('total_spent', 0))
+                        percentage = (amount / total_spent * 100) if total_spent > 0 else 0
+                        response_parts.append(f"• {category}: ${amount:,.2f} ({percentage:.1f}%)")
+                    
+                    response = "\n".join(response_parts)
+                else:
+                
                 # Extract readable response from the nested structure
                 response = "No response generated"
                 
