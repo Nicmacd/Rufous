@@ -201,14 +201,42 @@ class CleanPDFProcessor:
     
     def _extract_merchant(self, description: str) -> Optional[str]:
         """Extract merchant name from description"""
-        # Simple merchant extraction - take first part before location
-        parts = description.split()
+        if not description:
+            return None
+            
+        # Clean up the description first
+        desc = description.strip()
+        
+        # Handle Square payments - capture full SQ *MERCHANT NAME
+        if desc.startswith('SQ *'):
+            # Extract everything after "SQ *" until location or end
+            sq_match = re.match(r'SQ \*([^A-Z]{2,}(?:[A-Z]{2})?)', desc)
+            if sq_match:
+                return f"SQ *{sq_match.group(1).strip()}"
+            else:
+                # Fallback: take first 3-4 words for Square
+                parts = desc.split()
+                return ' '.join(parts[:4]) if len(parts) >= 4 else desc
+        
+        # Handle other payment processors
+        if desc.startswith('TST-'):
+            parts = desc.split()
+            return ' '.join(parts[:3]) if len(parts) >= 3 else desc
+        
+        # For regular merchants, take first part before location codes
+        # Location codes are usually 2-letter province/state codes at the end
+        parts = desc.split()
         if len(parts) > 0:
-            # Remove common prefixes and take first meaningful part
-            merchant = parts[0]
-            if merchant in ['SQ', 'TST-']:  # Square, etc.
-                merchant = ' '.join(parts[:2]) if len(parts) > 1 else merchant
-            return merchant
+            # If last part looks like a location code (2 uppercase letters), exclude it
+            if len(parts) > 1 and len(parts[-1]) == 2 and parts[-1].isupper():
+                merchant_parts = parts[:-1]
+            else:
+                merchant_parts = parts
+            
+            # Take first 2-3 words as merchant name
+            merchant = ' '.join(merchant_parts[:3])
+            return merchant if merchant else parts[0]
+        
         return None
     
     def _deduplicate_transactions(self, transactions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
