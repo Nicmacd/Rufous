@@ -528,31 +528,6 @@ def render_chat_section():
                     else:
                         # AI response failed, create manual response from data
                         response = create_manual_response(result)
-
-def create_manual_response(result):
-    """Create a manual response when AI generation fails"""
-    if not (isinstance(result, dict) and 'data' in result and 'results' in result['data']):
-        return "Unable to process query results"
-    
-    results = result['data']['results']
-    if not results:
-        return "No results found for your query"
-    
-    # Check if this is a category breakdown query
-    if all('category' in r and 'total_spent' in r for r in results):
-        total_spent = sum(float(r.get('total_spent', 0)) for r in results)
-        response_parts = [f"You spent a total of ${total_spent:,.2f} in 2025, broken down by category:"]
-        
-        for r in results:
-            category = r.get('category') or 'Uncategorized'
-            amount = float(r.get('total_spent', 0))
-            percentage = (amount / total_spent * 100) if total_spent > 0 else 0
-            response_parts.append(f"• {category}: ${amount:,.2f} ({percentage:.1f}%)")
-        
-        return "\n".join(response_parts)
-    
-    # Generic fallback for other query types
-    return f"Found {len(results)} results from your query."
                 
                 # Clean up concatenated text issues
                 if isinstance(response, str):
@@ -597,6 +572,31 @@ def create_manual_response(result):
                 st.markdown(f"**Query:** {chat['query']}")
                 st.markdown(f"**Response:** {chat['response']}")
                 st.caption(f"Asked: {chat['timestamp'].strftime('%Y-%m-%d %H:%M')}")
+
+def create_manual_response(result):
+    """Create a manual response when AI generation fails"""
+    if not (isinstance(result, dict) and 'data' in result and 'results' in result['data']):
+        return "Unable to process query results"
+    
+    results = result['data']['results']
+    if not results:
+        return "No results found for your query"
+    
+    # Check if this is a category breakdown query
+    if all('category' in r and 'total_spent' in r for r in results):
+        total_spent = sum(float(r.get('total_spent', 0)) for r in results)
+        response_parts = [f"You spent a total of ${total_spent:,.2f} in 2025, broken down by category:"]
+        
+        for r in results:
+            category = r.get('category') or 'Uncategorized'
+            amount = float(r.get('total_spent', 0))
+            percentage = (amount / total_spent * 100) if total_spent > 0 else 0
+            response_parts.append(f"• {category}: ${amount:,.2f} ({percentage:.1f}%)")
+        
+        return "\n".join(response_parts)
+    
+    # Generic fallback for other query types
+    return f"Found {len(results)} results from your query."
 
 def render_management_tab():
     """Render the management tab with statements, categories and transactions"""
