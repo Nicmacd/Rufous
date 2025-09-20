@@ -503,6 +503,9 @@ def render_chat_section():
             try:
                 result = st.session_state.chat_handler.process_query(query)
                 
+                # Debug: Show what we're getting
+                st.write("DEBUG - Result structure:", result)
+                
                 # Extract readable response from the nested structure
                 response = "No response generated"
                 
