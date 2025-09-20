@@ -534,18 +534,19 @@ def render_chat_section():
                     # Check if there's a nested response dict
                     if 'response' in result and isinstance(result['response'], dict):
                         nested_response = result['response']
-                        if 'summary' in nested_response and nested_response['summary'] != "Found 6 results":
-                            response = nested_response['summary']
-                        elif 'detailed_response' in nested_response and "Your query returned" not in nested_response['detailed_response']:
+                        # Prefer detailed_response over summary for richer information
+                        if 'detailed_response' in nested_response and "Your query returned" not in nested_response['detailed_response']:
                             response = nested_response['detailed_response']
+                        elif 'summary' in nested_response and nested_response['summary'] != "Found 6 results":
+                            response = nested_response['summary']
                         else:
                             # AI response failed, create manual response from data
                             response = create_manual_response(result)
                     # Check direct fields
-                    elif 'summary' in result and result['summary'] != "Found 6 results":
-                        response = result['summary']
                     elif 'detailed_response' in result and "Your query returned" not in result['detailed_response']:
                         response = result['detailed_response']
+                    elif 'summary' in result and result['summary'] != "Found 6 results":
+                        response = result['summary']
                     else:
                         # AI response failed, create manual response from data
                         response = create_manual_response(result)
