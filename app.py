@@ -450,7 +450,6 @@ def render_unified_dashboard():
         with col2:
             # Always credit since user only uploads credit statements
             default_account_type = "credit"
-            st.info("💳 Credit Card Statements")
         
         if uploaded_files and st.session_state.pdf_processor:
             if st.button("🚀 Process All Statements", type="primary"):
