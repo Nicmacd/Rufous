@@ -34,7 +34,7 @@ transactions table:
 - id (INTEGER PRIMARY KEY)
 - date (DATE) - Transaction date in YYYY-MM-DD format
 - description (TEXT) - Transaction description/merchant name
-- amount (DECIMAL) - Transaction amount (negative = expense, positive = income/credit)
+- amount (DECIMAL) - Transaction amount (POSITIVE values represent money spent/expenses, NEGATIVE values represent income/credits/refunds)
 - balance (DECIMAL) - Account balance after transaction
 - account_type (TEXT) - 'debit' or 'credit'
 - category (TEXT) - Spending category (Food & Dining, Transportation, etc.)
@@ -47,8 +47,12 @@ transactions table:
 - updated_at (TIMESTAMP)
 
 IMPORTANT NOTES:
-- Expenses are NEGATIVE amounts (purchases, spending)
-- Income/credits are POSITIVE amounts (payments, refunds)
+- Expenses/spending are POSITIVE amounts (purchases, money going out)
+- Income/credits/refunds are NEGATIVE amounts (money coming in)
+- For spending queries, use WHERE amount > 0 (money spent)
+- For income queries, use WHERE amount < 0 (money received)
+- When calculating "money spent" or "expenses", sum positive amounts
+- When user asks about "spending" or "expenses", they want positive amounts
 - Use date >= and date <= for date ranges
 - Use LIKE for text matching (case insensitive with UPPER())
 - Use ABS(amount) when calculating total spending
