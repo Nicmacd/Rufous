@@ -506,25 +506,6 @@ def render_chat_section():
                 # Debug: Show what we're getting
                 st.write("DEBUG - Result structure:", result)
                 
-                # For now, let's create a better response from the data directly
-                if (isinstance(result, dict) and 'data' in result and 
-                    'results' in result['data'] and result['data']['results']):
-                    
-                    results = result['data']['results']
-                    total_spent = sum(float(r.get('total_spent', 0)) for r in results)
-                    
-                    # Create a readable response from the data
-                    response_parts = [f"You spent a total of ${total_spent:,.2f} in 2025, broken down by category:"]
-                    
-                    for r in results:
-                        category = r.get('category') or 'Uncategorized'
-                        amount = float(r.get('total_spent', 0))
-                        percentage = (amount / total_spent * 100) if total_spent > 0 else 0
-                        response_parts.append(f"• {category}: ${amount:,.2f} ({percentage:.1f}%)")
-                    
-                    response = "\n".join(response_parts)
-                else:
-                
                 # Extract readable response from the nested structure
                 response = "No response generated"
                 
@@ -532,19 +513,46 @@ def render_chat_section():
                     # Check if there's a nested response dict
                     if 'response' in result and isinstance(result['response'], dict):
                         nested_response = result['response']
-                        if 'summary' in nested_response:
+                        if 'summary' in nested_response and nested_response['summary'] != "Found 6 results":
                             response = nested_response['summary']
-                        elif 'detailed_response' in nested_response:
+                        elif 'detailed_response' in nested_response and "Your query returned" not in nested_response['detailed_response']:
                             response = nested_response['detailed_response']
+                        else:
+                            # AI response failed, create manual response from data
+                            response = create_manual_response(result)
                     # Check direct fields
-                    elif 'summary' in result:
+                    elif 'summary' in result and result['summary'] != "Found 6 results":
                         response = result['summary']
-                    elif 'detailed_response' in result:
+                    elif 'detailed_response' in result and "Your query returned" not in result['detailed_response']:
                         response = result['detailed_response']
-                    elif 'response' in result:
-                        response = str(result['response'])
                     else:
-                        response = str(result)
+                        # AI response failed, create manual response from data
+                        response = create_manual_response(result)
+
+def create_manual_response(result):
+    """Create a manual response when AI generation fails"""
+    if not (isinstance(result, dict) and 'data' in result and 'results' in result['data']):
+        return "Unable to process query results"
+    
+    results = result['data']['results']
+    if not results:
+        return "No results found for your query"
+    
+    # Check if this is a category breakdown query
+    if all('category' in r and 'total_spent' in r for r in results):
+        total_spent = sum(float(r.get('total_spent', 0)) for r in results)
+        response_parts = [f"You spent a total of ${total_spent:,.2f} in 2025, broken down by category:"]
+        
+        for r in results:
+            category = r.get('category') or 'Uncategorized'
+            amount = float(r.get('total_spent', 0))
+            percentage = (amount / total_spent * 100) if total_spent > 0 else 0
+            response_parts.append(f"• {category}: ${amount:,.2f} ({percentage:.1f}%)")
+        
+        return "\n".join(response_parts)
+    
+    # Generic fallback for other query types
+    return f"Found {len(results)} results from your query."
                 
                 # Clean up concatenated text issues
                 if isinstance(response, str):
