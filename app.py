@@ -1048,8 +1048,13 @@ def process_uploaded_files(uploaded_files, default_account_type):
                 # Store in database (this was missing!)
                 transactions = result['transactions']
                 if transactions:
-                    # Add statement record
-                    statement_date = transactions[0]['date'] if transactions else None
+                    # Add statement record - prefer statement_date from filename parsing
+                    statement_date = result.get('statement_date')
+                    if not statement_date:
+                        # Fallback to earliest transaction date
+                        sorted_transactions = sorted(transactions, key=lambda x: x['date'])
+                        statement_date = sorted_transactions[0]['date']
+                    
                     total_amount = sum(t['amount'] for t in transactions)
                     
                     statement_id = st.session_state.database.add_statement(
