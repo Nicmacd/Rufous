@@ -650,8 +650,23 @@ def render_management_tab():
 def render_statement_management():
     """Render statement management with uploaded files and missing months"""
     try:
-        # Get all processed statements
-        statements = st.session_state.database.get_processed_statements()
+        # Get all processed statements from the database
+        # Since get_processed_statements doesn't exist, let's query directly
+        try:
+            import sqlite3
+            conn = sqlite3.connect(st.session_state.database.db_path)
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT filename, statement_date, transaction_count, total_amount, created_at 
+                FROM statements 
+                ORDER BY statement_date DESC
+            """)
+            statements = [dict(zip([col[0] for col in cursor.description], row)) 
+                         for row in cursor.fetchall()]
+            conn.close()
+        except Exception as e:
+            st.error(f"Error querying statements: {e}")
+            statements = []
         
         if not statements:
             st.info("No statements uploaded yet. Go to the Dashboard tab to upload your first statement.")
