@@ -519,12 +519,14 @@ def render_chat_section():
         if st.button("🎯 Category Breakdown", use_container_width=True):
             st.session_state.quick_query = "Break down my spending by category"
     
-    # Chat input
+    # Chat input with clearer labeling
+    st.markdown("#### 💬 Ask a Question")
     query = st.text_input(
-        "Ask about your finances:",
+        "Type your question here:",
         value=getattr(st.session_state, 'quick_query', ''),
         placeholder="e.g., How much did I spend on food last month?",
-        key="chat_input"
+        key="chat_input",
+        label_visibility="collapsed"
     )
     
     if st.button("🔍 Analyze", type="primary") and query:
@@ -533,11 +535,11 @@ def render_chat_section():
                 result = st.session_state.chat_handler.process_query(query)
                 response = result.get('response', 'No response generated')
                 
-                # Display response
-                st.markdown('<div class="chat-message">', unsafe_allow_html=True)
-                st.markdown(f"**You:** {query}")
-                st.markdown(f"**Analysis:** {response}")
-                st.markdown('</div>', unsafe_allow_html=True)
+                # Display response in a cleaner format
+                with st.container():
+                    st.markdown(f"**You:** {query}")
+                    st.markdown(f"**Analysis:** {response}")
+                    st.markdown("---")
                 
                 # Add to chat history
                 st.session_state.chat_history.append({
