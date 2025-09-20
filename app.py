@@ -531,22 +531,48 @@ def render_chat_section():
                 response = "No response generated"
                 
                 if isinstance(result, dict):
-                    # Check if there's a nested response dict
-                    if 'response' in result and isinstance(result['response'], dict):
+                    # For single transaction queries, create a concise custom response
+                    if ('data' in result and 'results' in result['data'] and 
+                        len(result['data']['results']) == 1 and 
+                        'description' in result['data']['results'][0]):
+                        
+                        r = result['data']['results'][0]
+                        amount = r.get('amount', 0)
+                        date = r.get('date', '')
+                        description = r.get('description', '')
+                        category = r.get('category', '')
+                        
+                        # Format date nicely
+                        try:
+                            from datetime import datetime
+                            date_obj = datetime.strptime(date, '%Y-%m-%d')
+                            formatted_date = date_obj.strftime('%B %d, %Y')
+                        except:
+                            formatted_date = date
+                        
+                        # Create concise response
+                        if 'biggest' in result.get('query', '').lower() or 'largest' in result.get('query', '').lower():
+                            response = f"The largest transaction was ${amount:,.2f}, which occurred on {formatted_date}, at {description}."
+                        elif 'smallest' in result.get('query', '').lower():
+                            response = f"The smallest transaction was ${amount:,.2f}, which occurred on {formatted_date}, at {description}."
+                        else:
+                            response = f"The transaction was ${amount:,.2f}, which occurred on {formatted_date}, at {description}."
+                    
+                    # Check if there's a nested response dict (fallback)
+                    elif 'response' in result and isinstance(result['response'], dict):
                         nested_response = result['response']
-                        # Prefer detailed_response over summary for richer information
-                        if 'detailed_response' in nested_response and "Your query returned" not in nested_response['detailed_response']:
-                            response = nested_response['detailed_response']
-                        elif 'summary' in nested_response and nested_response['summary'] != "Found 6 results":
+                        if 'summary' in nested_response and nested_response['summary'] != "Found 6 results":
                             response = nested_response['summary']
+                        elif 'detailed_response' in nested_response and "Your query returned" not in nested_response['detailed_response']:
+                            response = nested_response['detailed_response']
                         else:
                             # AI response failed, create manual response from data
                             response = create_manual_response(result)
-                    # Check direct fields
-                    elif 'detailed_response' in result and "Your query returned" not in result['detailed_response']:
-                        response = result['detailed_response']
+                    # Check direct fields (fallback)
                     elif 'summary' in result and result['summary'] != "Found 6 results":
                         response = result['summary']
+                    elif 'detailed_response' in result and "Your query returned" not in result['detailed_response']:
+                        response = result['detailed_response']
                     else:
                         # AI response failed, create manual response from data
                         response = create_manual_response(result)
