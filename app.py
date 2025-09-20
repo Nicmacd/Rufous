@@ -626,6 +626,24 @@ def create_manual_response(result):
         
         return "\n".join(response_parts)
     
+    # Check if this is a single transaction query (biggest/smallest expense, etc.)
+    if len(results) == 1 and all(field in results[0] for field in ['date', 'description', 'amount']):
+        r = results[0]
+        amount = r.get('amount', 0)
+        date = r.get('date', 'Unknown date')
+        description = r.get('description', 'Unknown merchant')
+        category = r.get('category') or 'Uncategorized'
+        
+        # Format the date nicely
+        try:
+            from datetime import datetime
+            date_obj = datetime.strptime(date, '%Y-%m-%d')
+            formatted_date = date_obj.strftime('%B %d, %Y')
+        except:
+            formatted_date = date
+        
+        return f"The transaction was ${amount:,.2f} at {description} on {formatted_date} (Category: {category})"
+    
     # Generic fallback for other query types
     return f"Found {len(results)} results from your query."
 
