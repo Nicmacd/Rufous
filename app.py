@@ -489,12 +489,13 @@ def render_chat_section():
     
     # Chat input with clearer labeling
     st.markdown("#### 💬 Ask a Question")
-    query = st.text_input(
+    query = st.text_area(
         "Type your question here:",
         value=getattr(st.session_state, 'quick_query', ''),
         placeholder="e.g., How much did I spend on food last month?",
         key="chat_input",
-        label_visibility="collapsed"
+        label_visibility="collapsed",
+        height=100
     )
     
     if st.button("🔍 Analyze", type="primary") and query:
