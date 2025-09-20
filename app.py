@@ -459,35 +459,6 @@ def render_unified_dashboard():
     
     st.markdown("---")
     
-    # Financial Overview Section
-    st.markdown("### 📊 Financial Overview")
-    
-    try:
-        # Get monthly data for visualization  
-        monthly_data = None  # Simplified for now - will implement charts later
-        
-        # Key metrics in a clean layout
-        stats = st.session_state.database.get_database_stats()
-        
-        col1, col2, col3, col4 = st.columns(4)
-        with col1:
-            st.metric("Total Transactions", stats['total_transactions'])
-        with col2:
-            st.metric("Total Spent", f"${stats['total_spent']:,.2f}")
-        with col3:
-            st.metric("Net Change", f"${stats['net_worth_change']:,.2f}")
-        with col4:
-            st.metric("Statements Processed", stats['total_statements'])
-        
-        if stats['total_transactions'] == 0:
-            st.info("📈 Upload your first credit card statement to see financial insights!")
-            
-    except Exception as e:
-        st.error(f"Error loading financial overview: {e}")
-        logger.error(f"Dashboard overview error: {e}")
-    
-    st.markdown("---")
-    
     # Chat Analysis Section
     st.markdown("### 💬 Chat Analysis")
     render_chat_section()
@@ -566,18 +537,132 @@ def render_chat_section():
                 st.caption(f"Asked: {chat['timestamp'].strftime('%Y-%m-%d %H:%M')}")
 
 def render_management_tab():
-    """Render the management tab with categories and transactions"""
+    """Render the management tab with statements, categories and transactions"""
     
     # Sub-tabs for management functions
-    mgmt_tab1, mgmt_tab2 = st.tabs(["🎯 Category Management", "📋 Transaction List"])
+    mgmt_tab1, mgmt_tab2, mgmt_tab3 = st.tabs(["📄 Statements", "🎯 Categories", "📋 Transactions"])
     
     with mgmt_tab1:
+        st.markdown("### 📄 Statement Management")
+        render_statement_management()
+    
+    with mgmt_tab2:
         st.markdown("### 🎯 Category Management")
         render_category_management(st.session_state.category_manager)
     
-    with mgmt_tab2:
+    with mgmt_tab3:
         st.markdown("### 📋 All Transactions")
         render_transaction_list()
+
+def render_statement_management():
+    """Render statement management with uploaded files and missing months"""
+    try:
+        # Get all processed statements
+        statements = st.session_state.database.get_processed_statements()
+        
+        if not statements:
+            st.info("No statements uploaded yet. Go to the Dashboard tab to upload your first statement.")
+            return
+        
+        st.markdown("#### 📊 Quick Stats")
+        col1, col2, col3, col4 = st.columns(4)
+        stats = st.session_state.database.get_database_stats()
+        
+        with col1:
+            st.metric("Total Transactions", stats['total_transactions'])
+        with col2:
+            st.metric("Total Spent", f"${stats['total_spent']:,.2f}")
+        with col3:
+            st.metric("Net Change", f"${stats['net_worth_change']:,.2f}")
+        with col4:
+            st.metric("Statements Processed", stats['total_statements'])
+        
+        st.markdown("---")
+        
+        # Uploaded statements list
+        st.markdown("#### 📋 Uploaded Statements")
+        
+        # Convert to DataFrame for better display
+        import pandas as pd
+        df = pd.DataFrame(statements)
+        
+        if not df.empty:
+            # Format the data for display
+            display_df = df.copy()
+            if 'statement_date' in display_df.columns:
+                display_df['statement_date'] = pd.to_datetime(display_df['statement_date']).dt.strftime('%Y-%m')
+            if 'total_amount' in display_df.columns:
+                display_df['total_amount'] = display_df['total_amount'].apply(lambda x: f"${x:,.2f}")
+            if 'created_at' in display_df.columns:
+                display_df['created_at'] = pd.to_datetime(display_df['created_at']).dt.strftime('%Y-%m-%d %H:%M')
+            
+            # Select columns to show
+            columns_to_show = ['filename', 'statement_date', 'transaction_count', 'total_amount', 'created_at']
+            available_columns = [col for col in columns_to_show if col in display_df.columns]
+            
+            st.dataframe(
+                display_df[available_columns],
+                use_container_width=True,
+                hide_index=True,
+                column_config={
+                    "filename": "Statement File",
+                    "statement_date": "Month",
+                    "transaction_count": "Transactions",
+                    "total_amount": "Total Amount",
+                    "created_at": "Uploaded"
+                }
+            )
+            
+            # Missing months analysis
+            st.markdown("---")
+            st.markdown("#### 📅 Missing Months Analysis")
+            
+            # Get unique months from statements
+            if 'statement_date' in df.columns:
+                uploaded_months = set()
+                for date_str in df['statement_date'].dropna():
+                    try:
+                        date_obj = pd.to_datetime(date_str)
+                        uploaded_months.add(date_obj.strftime('%Y-%m'))
+                    except:
+                        continue
+                
+                if uploaded_months:
+                    # Find gaps in months
+                    from datetime import datetime, timedelta
+                    import calendar
+                    
+                    # Get date range
+                    min_date = min([pd.to_datetime(d) for d in df['statement_date'].dropna()])
+                    max_date = max([pd.to_datetime(d) for d in df['statement_date'].dropna()])
+                    
+                    # Generate all months in range
+                    current = min_date.replace(day=1)
+                    all_months = set()
+                    
+                    while current <= max_date:
+                        all_months.add(current.strftime('%Y-%m'))
+                        # Move to next month
+                        if current.month == 12:
+                            current = current.replace(year=current.year + 1, month=1)
+                        else:
+                            current = current.replace(month=current.month + 1)
+                    
+                    missing_months = sorted(all_months - uploaded_months)
+                    
+                    if missing_months:
+                        st.warning(f"**Missing {len(missing_months)} months:** {', '.join(missing_months)}")
+                        st.info("💡 Upload statements for these months to get complete financial analysis.")
+                    else:
+                        st.success("✅ No missing months detected in your date range!")
+                else:
+                    st.info("Unable to analyze missing months - no valid dates found.")
+            else:
+                st.info("Statement dates not available for missing month analysis.")
+        
+    except Exception as e:
+        st.error(f"Error loading statement management: {e}")
+        logger.error(f"Statement management error: {e}")
 
 def render_transaction_list():
     """Render searchable transaction list"""
