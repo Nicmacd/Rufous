@@ -926,8 +926,16 @@ def process_uploaded_files(uploaded_files, default_account_type):
             temp_path.unlink(missing_ok=True)
             
         except Exception as e:
-            st.error(f"❌ {uploaded_file.name}: Processing failed - {e}")
-            logger.error(f"File processing error: {e}")
+            import traceback
+            error_details = traceback.format_exc()
+            st.error(f"❌ {uploaded_file.name}: Processing failed - {str(e)}")
+            
+            # Show detailed error in expander
+            with st.expander(f"🔍 Error Details for {uploaded_file.name}", expanded=False):
+                st.code(error_details)
+            
+            logger.error(f"File processing error for {uploaded_file.name}: {e}")
+            logger.error(f"Full traceback: {error_details}")
     
     progress_bar.progress(1.0)
     status_text.text(f"Complete! Processed {processed_count} of {total_files} files.")
