@@ -1,7 +1,3 @@
-# Environment variables (contains sensitive API keys)
-.env
-*.env
-
 # Python
 __pycache__/
 *.py[cod]
@@ -25,20 +21,28 @@ wheels/
 *.egg
 MANIFEST
 
-# Virtual environments
+# Database files
+data/transactions.db
+*.db
+*.sqlite3
+
+# Environment (keep .env.example but not .env)
+.env
+.venv
+env/
 venv/
 ENV/
-env/
-.venv/
+env.bak/
+venv.bak/
 
-# IDE files
+# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# OS files
+# OS
 .DS_Store
 .DS_Store?
 ._*
@@ -47,31 +51,14 @@ env/
 ehthumbs.db
 Thumbs.db
 
-# Database files (might contain sensitive transaction data)
-*.db
-*.sqlite
-*.sqlite3
-
 # Logs
 *.log
 
 # Temporary files
-tmp/
-temp/
 *.tmp
+*.temp
 
-# Debug and test outputs
-rufous_debug_report.json
-
-# Personal configuration files
-Support/Claude/claude_desktop_config.json
-
-# Statement files (might contain personal financial data)
-statements/
+# Streamlit
+.streamlit/# Personal Financial Data - Keep Private
+transactions/
 *.pdf
-*.csv
-*.xlsx
-
-# Any backup files
-*.bak
-*.backup

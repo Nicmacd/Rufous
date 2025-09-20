@@ -1,0 +1,96 @@
+date,posting_date,description,location,amount,merchant,is_transfer
+2024-06-12,2024-06-13,SQ *,"Koha Kitchen Toronto, Ontario, Canada",-31.08,SQ *,False
+2024-06-11,2024-06-13,CPA -,"Pto Calgary, Alberta, Canada",-50.0,CPA,False
+2024-06-12,2024-06-13,TELETEST.,"Ca London, Ontario, Canada",-49.0,TELETEST.,False
+2024-06-12,2024-06-13,GEORGE',"S Nf Toronto Br Toronto, Ontario, Canada",-7.55,GEORGE',False
+2024-06-13,2024-06-13,SQ *,"Cafe Landwer Unive Toronto, Ontario, Canada",-6.43,SQ *,False
+2024-06-14,2024-06-16,Decathlon Canada Inc.,"Montreal, Quebec, Canada",-102.83,Decathlon,False
+2024-06-12,2024-06-16,PRESTO FARE/5H70LCH8QH,"Toronto, Ontario, Canada",-3.3,PRESTO,False
+2024-06-14,2024-06-16,TURO* GTA JUN19,"Scarborough, Ontario, Canada",-275.33,TURO*,False
+2024-06-14,2024-06-16,SP COLLEGE STREET BAGE TORONTO ON,"Sp College Street Bage Toronto, Ontario, Canada",-11.85,SP,False
+2024-06-15,2024-06-16,RUDY RESTO TORONTO ON,"Rudy Resto Toronto, Ontario, Canada",-36.12,RUDY,False
+2024-06-15,2024-06-16,Subway 45133,"Oakville, Ontario, Canada",-13.44,Subway,False
+2024-06-15,2024-06-16,METRO 442,"Toronto, Ontario, Canada",-15.98,METRO,False
+2024-06-15,2024-06-16,HIGHER GROUND CAFE BELFOUNTAIN ON,"Higher Ground Cafe Belfountain, Ontario, Canada",-6.35,HIGHER,False
+2024-06-14,2024-06-16,CLOAK AND DAGGER IRISH TORONTO ON,"Cloak And Dagger Irish Toronto, Ontario, Canada",-24.3,CLOAK,False
+2024-06-15,2024-06-16,CLOAK AND DAGGER IRISH TORONTO ON,"Cloak And Dagger Irish Toronto, Ontario, Canada",-13.97,CLOAK,False
+2024-06-15,2024-06-16,CLOAK AND DAGGER IRISH TORONTO ON,"Cloak And Dagger Irish Toronto, Ontario, Canada",-15.26,CLOAK,False
+2024-06-15,2024-06-16,FIYU FOOD TRUCK TORONTO ON,"Fiyu Food Truck Toronto, Ontario, Canada",-11.29,FIYU,False
+2024-06-15,2024-06-17,TIM HORTONS #2963,"Georgetown, Ontario, Canada",-12.62,TIM,False
+2024-06-16,2024-06-17,LS Dineen Coffee Co Toronto ON,"Ls Dineen Coffee Co Toronto, Ontario, Canada",-26.53,LS,False
+2024-06-16,2024-06-17,JUICY DUMPLING FORT ERIE ON,"Juicy Dumpling Fort Erie, Ontario, Canada",-5.64,JUICY,False
+2024-06-15,2024-06-17,PRESTO FARE/5H7593WLRN,"Oakville, Ontario, Canada",-9.34,PRESTO,False
+2024-06-16,2024-06-17,PJ'S NO FRILLS 9584,"Toronto, Ontario, Canada",-9.99,PJ'S,False
+2024-06-17,2024-06-18,METRO 442,"Toronto, Ontario, Canada",-22.95,METRO,False
+2024-06-18,2024-06-18,TRSF FROM/DE ACCT/CPT 2634-XXXX-724,,4000.0,TRSF,True
+2024-06-18,2024-06-19,SQ *,"Grace Meat Market Toronto, Ontario, Canada",-15.1,SQ *,False
+2024-06-19,2024-06-19,Stil Cultur Toronto ON,"Stil Cultur Toronto, Ontario, Canada",-69.0,Stil,False
+2024-06-17,2024-06-19,CHARLOTTE',"S Room Toronto, Ontario, Canada",-11.3,CHARLOTTE',False
+2024-06-18,2024-06-20,BULK BARN # 699,"Toront Toronto, Ontario, Canada",-53.58,BULK,False
+2024-06-18,2024-06-20,LCBO/RAO #0639,"Toronto, Ontario, Canada",-18.95,LCBO/RAO,False
+2024-06-19,2024-06-20,WWW.COWBOY*,"Cowboysmus Calgary, Alberta, Canada",-160.93,WWW.COWBOY*,False
+2024-06-19,2024-06-20,SQ *,"Pedaal Toronto, Ontario, Canada",-17.0,SQ *,False
+2024-06-19,2024-06-20,TICKETMASTER CANADA HO TORONTO ON,"Ticketmaster Canada Ho Toronto, Ontario, Canada",-191.8,TICKETMASTER,False
+2024-06-18,2024-06-20,BIG CHILL ICE-,"Cream Pa Toronto, Ontario, Canada",-18.97,BIG,False
+2024-06-19,2024-06-20,MEMENTO FILM LAB TORONTO ON,"Memento Film Lab Toronto, Ontario, Canada",-55.37,MEMENTO,False
+2024-06-20,2024-06-20,TCKTWEB*DISCLOSURETIGA 800-965-4827 QC,"Disclosuretiga, Quebec, Canada",-111.65,TCKTWEB*DISCLOSURETIGA,False
+2024-06-19,2024-06-23,LCBO/RAO #0346,"Woodbridge, Ontario, Canada",-19.25,LCBO/RAO,False
+2024-06-19,2024-06-23,THE BEER STORE #2018,"Woodbridge, Ontario, Canada",-54.97,THE,False
+2024-06-20,2024-06-23,SQ *,"Friends Of Killarn Killarney, Ontario, Canada",-5.08,SQ *,False
+2024-06-19,2024-06-23,THE BURGER',"S Priest Woodbridge, Ontario, Canada",-20.95,THE,False
+2024-06-20,2024-06-23,POINT GRONDINE TRADING KILLARNEY ON,"Point Grondine Trading Killarney, Ontario, Canada",-25.44,POINT,False
+2024-06-19,2024-06-23,WAL-MART #3174,"Concord, Ontario, Canada",-4.96,WAL-MART,False
+2024-06-20,2024-06-23,KILLARNEY OUTFITTERS KILLARNEY ON,"Killarney Outfitters Killarney, Ontario, Canada",-270.46,KILLARNEY,False
+2024-06-20,2024-06-23,KILLARNEY OUTFITTERS KILLARNEY ON,"Killarney Outfitters Killarney, Ontario, Canada",-35.76,KILLARNEY,False
+2024-06-20,2024-06-23,MECP-,"Killarney Ppark Killarney, Ontario, Canada",-54.0,MECP-,False
+2024-06-22,2024-06-23,METRO 442,"Toronto, Ontario, Canada",-56.25,METRO,False
+2024-06-22,2024-06-23,HERBERT FISHERIES KILLARNEY ON,"Herbert Fisheries Killarney, Ontario, Canada",-38.97,HERBERT,False
+2024-06-22,2024-06-24,ONROUTE INNISFIL 400 #,"Innisfil, Ontario, Canada",-54.29,ONROUTE,False
+2024-06-22,2024-06-24,SHELL C02573,"Toronto, Ontario, Canada",-4.41,SHELL,False
+2024-06-24,2024-06-25,YMCA OF GREATER TORONT TORONTO ON,"Ymca Of Greater Toront Toronto, Ontario, Canada",-68.93,YMCA,False
+2024-06-23,2024-06-25,PRESTO FARE/PF2GLZN5R9,"Toronto, Ontario, Canada",-6.6,PRESTO,False
+2024-06-23,2024-06-25,BAR HOP TORONTO ON,"Bar Hop Toronto, Ontario, Canada",-27.95,BAR,False
+2024-06-23,2024-06-25,CITY TOR. FERRY DOCKS-,"Toronto, Ontario, Canada",-36.44,CITY,False
+2024-06-24,2024-06-26,PRESTO FARE/PF9D799CNG,"Toronto, Ontario, Canada",-6.6,PRESTO,False
+2024-06-25,2024-06-26,PEOPLES CHAMP VINTAGE TORONTO ON,"Peoples Champ Vintage Toronto, Ontario, Canada",-84.75,PEOPLES,False
+2024-06-27,2024-06-27,SQ *COMMONWEALTH BAR &,"Calgary, Alberta, Canada",-4.2,SQ *COMMONWEALTH,False
+2024-06-25,2024-06-27,SHOPPERS DRUG MART 813,"Toronto, Ontario, Canada",-2.65,SHOPPERS,False
+2024-06-26,2024-06-27,MOUNTAIN EQUIPMENT COM TORONTO ON,"Mountain Equipment Com Toronto, Ontario, Canada",-146.84,MOUNTAIN,False
+2024-06-27,2024-06-27,UBER*,"Trip Toronto, Ontario, Canada",-10.27,UBER*,False
+2024-06-27,2024-06-27,SQ *COMMONWEALTH BAR &,"Calgary, Alberta, Canada",-19.6,SQ *COMMONWEALTH,False
+2024-06-27,2024-06-30,SQ *ANALOG 17TH,"Calgary, Alberta, Canada",-4.62,SQ *ANALOG,False
+2024-06-27,2024-06-30,SQ *PEPPINO'S 17TH,"Calgary, Alberta, Canada",-13.8,SQ *PEPPINO'S,False
+2024-06-26,2024-06-30,PRESTO FARE/PFNWW8C2FT,"Toronto, Ontario, Canada",-3.3,PRESTO,False
+2024-06-26,2024-06-30,PRESTO FARE/PFNZ9KXQ9K,"Toronto, Ontario, Canada",-5.02,PRESTO,False
+2024-06-27,2024-06-30,UBER CANADA/,"Ubertrip Toronto, Ontario, Canada",-28.39,UBER,False
+2024-06-27,2024-06-30,THE TIPPLE COLD BEER &,"Fernie, British Columbia, Canada",-32.08,THE,False
+2024-06-29,2024-06-30,FERNIE GOLF CLUB FERNIE BC,"Fernie Golf Club Fernie, British Columbia, Canada",-61.81,FERNIE,False
+2024-07-02,2024-07-03,SQ *AMI TEA &,"Sub Ingl Calgary, Alberta, Canada",-8.92,SQ *AMI,False
+2024-07-01,2024-07-03,JERUSALEM SHAWARMA CALGARY AB,"Jerusalem Shawarma Calgary, Alberta, Canada",-28.31,JERUSALEM,False
+2024-07-03,2024-07-04,LA BOULANGERIE BAKERY CALGARY AB,"La Boulangerie Bakery Calgary, Alberta, Canada",-14.33,LA,False
+2024-07-04,2024-07-04,SQ *,"The Pioneer Event Calgary, Alberta, Canada",-16.8,SQ *,False
+2024-07-04,2024-07-04,CALGARY TRANSIT 403-268-1969 AB,"Calgary, Alberta, Canada",-3.8,CALGARY,False
+2024-07-05,2024-07-07,TST-ACME PIZZA CO.,"Calgary, Alberta, Canada",-31.39,TST-ACME,False
+2024-07-04,2024-07-07,DISTRIBUTEL VERDUN QC,"Distributel Verdun, Quebec, Canada",-67.74,DISTRIBUTEL,False
+2024-07-04,2024-07-07,GMC STADIUM BARS CONC CALGARY AB,"Gmc Stadium Bars Conc Calgary, Alberta, Canada",-24.75,GMC,False
+2024-07-04,2024-07-07,UBER*,"Trip Toronto, Ontario, Canada",-13.69,UBER*,False
+2024-07-05,2024-07-07,SQ *,"Happy Hero Calgary, Alberta, Canada",-4.0,SQ *,False
+2024-07-05,2024-07-07,SQ *,"Cowboys Stampede T Calgary, Alberta, Canada",-27.72,SQ *,False
+2024-07-06,2024-07-07,SQ *ZEN8GRILL -,"Cowboy Calgary, Alberta, Canada",-19.95,SQ *ZEN8GRILL,False
+2024-07-05,2024-07-07,22028 MACS CONV.,"Store Calgary, Alberta, Canada",-4.59,22028,False
+2024-07-06,2024-07-07,SQ *,"Cowboys Stampede T Calgary, Alberta, Canada",-13.86,SQ *,False
+2024-07-04,2024-07-07,CHECKER CAB CALGARY AB,"Checker Cab Calgary, Alberta, Canada",-25.74,CHECKER,False
+2024-07-06,2024-07-07,UBER CANADA/,"Ubertrip Toronto, Ontario, Canada",-7.9,UBER,False
+2024-07-07,2024-07-08,TIM HORTONS #1757 403-246-7793 AB,,-14.25,TIM,False
+2024-07-08,2024-07-09,SQ *,"Grace Meat Market Toronto, Ontario, Canada",-17.56,SQ *,False
+2024-07-08,2024-07-09,MAD RADISH EXCHANGE TORONTO ON,"Mad Radish Exchange Toronto, Ontario, Canada",-18.59,MAD,False
+2024-07-08,2024-07-09,SIMPLE BURGER TORONTO ON,"Simple Burger Toronto, Ontario, Canada",-12.35,SIMPLE,False
+2024-07-07,2024-07-09,THAI THIEN SUB CALGARY AB,"Thai Thien Sub Calgary, Alberta, Canada",-11.76,THAI,False
+2024-07-08,2024-07-09,METRO 442,"Toronto, Ontario, Canada",-51.35,METRO,False
+2024-07-08,2024-07-09,STARBUCKS COFFEE #7178,"Toronto, Ontario, Canada",-21.02,STARBUCKS,False
+2024-07-09,2024-07-10,LS Dineen Coffee Co Toronto ON,"Ls Dineen Coffee Co Toronto, Ontario, Canada",-12.43,LS,False
+2024-07-08,2024-07-10,PRESTO FARE/,"Phshtmhrpc Toronto, Ontario, Canada",-5.02,PRESTO,False
+2024-07-08,2024-07-10,PRESTO FARE/,"Phsljjmhfj Toronto, Ontario, Canada",-3.3,PRESTO,False
+2024-07-08,2024-07-10,SHOPPERS DRUG MART 813,"Toronto, Ontario, Canada",-19.15,SHOPPERS,False
+2024-07-10,2024-07-10,AMAZON* NL5XM36C0,"Vancouver, British Columbia, Canada",-25.86,AMAZON*,False
+2024-07-09,2024-07-11,MECP-ONTPARK-INT-,"Reser Orillia, Ontario, Canada",-8.5,MECP-ONTPARK-INT-,False

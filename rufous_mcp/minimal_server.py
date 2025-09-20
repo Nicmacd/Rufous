@@ -294,7 +294,7 @@ class RufousServer:
 async def main():
     """Main server entry point - exact pattern from simple_server.py"""
     try:
-        server_instance = MinimalRufousServer()
+        server_instance = RufousServer()
         
         async with stdio_server() as (read_stream, write_stream):
             await server_instance.server.run(

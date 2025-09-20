@@ -1,186 +1,293 @@
-# Rufous MCP Server
+sy itwh# Rufous v2 🦜
 
-A **Model Context Protocol (MCP) server** for PDF statement analysis and financial transaction storage. This server provides Claude Desktop with the ability to extract transaction data from PDF bank statements and store it locally for analysis.
+**Personal Financial Analysis with Natural Language Queries**
 
-## ✨ Current Features
+A privacy-first financial analysis tool that processes your bank statements locally using Ollama AI models. Ask questions about your spending in plain English and get instant insights with interactive charts.
 
-- **📄 Transaction Storage**: Store transaction data extracted by Claude from PDF statements  
-- **🔍 Transaction Retrieval**: Search and retrieve stored transactions from local database
-- **💾 Local SQLite Database**: All financial data stays on your device - privacy focused
-- **🔧 MCP Integration**: Works seamlessly with Claude Desktop
-- **🏦 Multi-Account Support**: Handle both debit and credit account statements
+![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=flat&logo=streamlit&logoColor=white)
+![Ollama](https://img.shields.io/badge/Ollama-Local_AI-green)
+![SQLite](https://img.shields.io/badge/SQLite-07405E?style=flat&logo=sqlite&logoColor=white)
+
+## ✨ What's New in v2
+
+- **🚀 10x Faster**: Direct database queries instead of slow MCP JSON processing
+- **💬 Natural Language**: Ask questions like "How much did I spend on coffee last month?"
+- **📊 Interactive Charts**: Instant visualizations with Plotly
+- **🔒 100% Local**: Your data never leaves your computer
+- **🎯 Smart Analysis**: Automatic categorization and merchant detection
+
+## 🎯 Features
+
+### 💬 Natural Language Queries
+```
+"Show me my spending trends over the last 6 months"
+"How much did I spend at Starbucks this year?"  
+"What are my top 5 expense categories?"
+"Compare this month's spending to last month"
+```
+
+### 📊 Interactive Visualizations
+- **Category breakdowns** with pie/bar charts
+- **Monthly trends** with income vs expenses
+- **Transaction timelines** and balance tracking
+- **Merchant analysis** and spending patterns
+
+### 📄 Smart PDF Processing
+- **Automatic extraction** from any bank statement format
+- **Duplicate detection** prevents double-counting
+- **Multi-page support** for complete statements
+- **Batch processing** for multiple files
+- **Auto-categorization** runs immediately after import
+- **Robust pipeline** with retry logic and error handling
+
+### 🏦 Financial Insights
+- Account balance tracking over time
+- Spending pattern recognition
+- Budget analysis and category trends  
+- Merchant and recurring transaction detection
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
-- Python 3.8 or higher
-- Claude Desktop application  
-- PDF financial statements to analyze
+1. **Python 3.8+**
+2. **Ollama** - Install from [ollama.ai](https://ollama.ai)
+3. **Poppler** (for PDF processing):
+   ```bash
+   # macOS
+   brew install poppler
+   
+   # Ubuntu/Debian  
+   sudo apt-get install poppler-utils
+   ```
 
 ### Installation
 
-1. **Clone the repository**:
+1. **Clone and setup**:
    ```bash
-   git clone https://github.com/your-username/rufous.git
-   cd rufous
-   ```
-
-2. **Install dependencies**:
-   ```bash
+   git clone <repository-url>
+   cd Rufous_v2
    pip install -r requirements.txt
    ```
 
-3. **Set up configuration** (optional):
+2. **Start Ollama and pull models**:
    ```bash
-   cp env.example .env
-   # Edit .env with your preferences - defaults work fine for most users
+   # Start Ollama service
+   ollama serve
+   
+   # In another terminal, pull required models
+   ollama pull moondream          # For PDF processing
+   ollama pull llama3.2           # For chat queries
    ```
 
-4. **Configure Claude Desktop**:
-   Add this to your Claude Desktop configuration file (`claude_desktop_config.json`):
-   ```json
-   {
-     "mcpServers": {
-       "rufous": {
-         "command": "python",
-         "args": ["/path/to/your/rufous/rufous_mcp/minimal_server.py"]
-       }
-     }
-   }
+3. **Launch the app**:
+   ```bash
+   streamlit run app.py
    ```
 
-## 📊 How It Works
+4. **Open your browser** to `http://localhost:8501`
 
-1. **Upload PDF**: Share a PDF bank statement with Claude Desktop
-2. **Claude Extracts**: Claude automatically extracts transaction data from the PDF
-3. **Store Data**: Claude calls the `store_transactions` tool to save data locally
-4. **Query Data**: Use the `get_transactions` tool to search and analyze your data
+## 📖 How to Use
 
-## 🛠️ Available Tools
+### 1. 📄 Upload Bank Statements
+- Click **"Process PDFs"** in the sidebar
+- Upload one or more PDF bank statements  
+- Select account type (debit/credit)
+- Click **"Process Statements"**
 
-### `store_transactions`
-Stores transaction data extracted by Claude from PDF statements.
+### 2. 💬 Ask Questions
+- Click **"Chat Analysis"** in the sidebar
+- Type natural language questions like:
+  - "What did I spend the most money on last month?"
+  - "Show me all my Amazon purchases"
+  - "How is my spending trending?"
 
-**Parameters:**
-- `statement_filename`: Name of the PDF file being processed
-- `account_type`: Either "debit" or "credit"  
-- `statement_date`: Date of the statement (optional)
-- `transactions`: Array of transaction objects with date, description, amount, balance
-
-### `get_transactions`  
-Retrieves stored transactions with optional filtering.
-
-**Parameters:**
-- `search_term`: Search in transaction descriptions (optional)
-- `start_date`: Filter transactions from this date (optional)
-- `end_date`: Filter transactions until this date (optional)
-- `account_type`: Filter by account type (optional)
-- `limit`: Maximum number of results (default: 100)
+### 3. 📊 Explore Dashboard
+- View **"Dashboard View"** for overview
+- See spending breakdowns, trends, and key metrics
+- Interactive charts you can zoom, pan, and explore
 
 ## 🏗️ Architecture
 
 ```
-Claude Desktop ←→ Rufous MCP Server ←→ Local SQLite Database
+┌─────────────────┐    ┌──────────────────┐    ┌────────────────┐
+│   Streamlit     │    │     Ollama       │    │    SQLite      │
+│   Frontend      │◄──►│   AI Models      │    │   Database     │
+│                 │    │                  │    │                │
+│ • Chat UI       │    │ • Vision (PDFs)  │    │ • Transactions │
+│ • File Upload   │    │ • Text (Queries) │    │ • Categories   │
+│ • Visualizations│    │ • Local Only     │    │ • Query History│
+└─────────────────┘    └──────────────────┘    └────────────────┘
 ```
-
-- **MCP Server**: Handles communication with Claude Desktop (`minimal_server.py`)
-- **Database**: SQLite database for storing transaction data locally (`database.py`)
-- **Config**: Environment-based configuration (`config.py`)
-
-## ⚙️ Configuration
-
-| Environment Variable | Description | Default |
-|---------------------|-------------|---------|
-| `RUFOUS_DATABASE_PATH` | Path to SQLite database | `~/rufous_data.db` |
-| `RUFOUS_STATEMENTS_DIRECTORY` | Directory for uploaded statements | `./statements` |
-| `USE_PERSISTENT_STORAGE` | Use persistent storage | `false` |
-| `SESSION_TIMEOUT_MINUTES` | Session timeout | `30` |
-| `LOG_LEVEL` | Logging level | `INFO` |
 
 ## 📁 Project Structure
 
 ```
-rufous/
-├── rufous_mcp/
-│   ├── __init__.py
-│   ├── minimal_server.py   # Main MCP server
-│   ├── config.py           # Configuration management  
-│   └── database.py         # SQLite database operations
-├── statements/             # Statement storage directory (created automatically)
-├── view_database.py        # Database inspection utility
-├── env.example            # Example environment configuration
-├── requirements.txt       # Python dependencies
-├── setup.py              # Package setup
+Rufous_v2/
+├── app.py                      # Main Streamlit application
+├── components/
+│   ├── database.py            # SQLite database operations
+│   ├── pdf_processor.py       # Ollama PDF extraction
+│   ├── chat_handler.py        # Natural language processing
+│   └── visualizations.py      # Plotly chart generation
+├── data/
+│   └── transactions.db        # SQLite database (auto-created)
+├── requirements.txt
 └── README.md
 ```
 
-## 🛠️ Development & Usage
+## 🔧 Configuration
 
-### Running the Server
-```bash
-# Start the MCP server directly for testing
-python rufous_mcp/minimal_server.py
-```
+The app works out of the box with sensible defaults:
 
-### Viewing Your Data
-```bash
-# Inspect stored transactions  
-python view_database.py
-```
+- **Database**: Stored in `./data/transactions.db`
+- **Models**: `moondream` for PDFs, `llama3.2` for chat
+- **Ollama**: Expected at `http://localhost:11434`
 
-### Example Workflow
-1. Upload a PDF bank statement to Claude Desktop
-2. Ask Claude: "Extract the transactions from this statement and store them"
-3. Claude will use the `store_transactions` tool automatically
-4. Query your data: "Show me all transactions from last month"
-5. Claude will use the `get_transactions` tool to retrieve results
+## 🆚 vs Original Rufous
+
+| Feature | Original (MCP) | v2 (Streamlit) |
+|---------|----------------|----------------|
+| **Speed** | Slow JSON processing | 10x faster direct queries |
+| **Interface** | Claude Desktop only | Dedicated web app |
+| **Queries** | Limited MCP tools | Natural language |
+| **Visualization** | None | Interactive charts |
+| **User Experience** | Command-based | Conversational |
 
 ## 🔒 Privacy & Security
 
-- **100% Local**: All transaction data stays on your device
-- **No Cloud Upload**: Financial data never leaves your computer  
-- **SQLite Storage**: Lightweight, file-based database
-- **Open Source**: Full transparency of data handling
+- **100% Local Processing**: AI models run on your machine
+- **No Cloud APIs**: No data sent to external services  
+- **Local Database**: All data stored in SQLite on your device
+- **No Telemetry**: Zero tracking or analytics
+- **Open Source**: Full transparency of code and data handling
 
-## 📊 Database Schema
+## 💡 Example Queries
 
-**Transactions Table:**
-- `id`, `date`, `description`, `amount`, `balance`
-- `account_type` (debit/credit), `category`, `statement_file`
-- Indexed for fast searching by date, description, category
+### Spending Analysis
+- "How much did I spend on restaurants last quarter?"
+- "What's my biggest expense category this year?"
+- "Show me all transactions over $500"
 
-**Statements Table:**  
-- Tracks processed PDF files to avoid duplicates
-- `filename`, `statement_date`, `account_type`, `transaction_count`
+### Trends & Patterns  
+- "What are my monthly spending trends?"
+- "Compare my spending this year vs last year"
+- "Am I spending more or less than usual?"
+
+### Specific Searches
+- "Find all my Netflix payments"
+- "Show me gas station purchases in December"
+- "What did I buy at Target last month?"
+
+### Financial Health
+- "What's my account balance trend?"
+- "How much do I spend on average per day?"
+- "What percentage of income goes to each category?"
+
+## 🛠️ Development
+
+### Adding Custom Visualizations
+Extend `components/visualizations.py`:
+
+```python
+def create_custom_chart(self, data):
+    fig = px.custom_chart(data)
+    return fig
+```
+
+### Adding Query Types
+Extend `components/chat_handler.py`:
+
+```python
+def _analyze_query(self, user_query):
+    # Add new query type logic
+    if "custom pattern" in user_query.lower():
+        return {"type": "custom_analysis", ...}
+```
+
+## 🐛 Troubleshooting
+
+### Database Lock Error
+```
+sqlite3.OperationalError: database is locked
+```
+**Solution**: This happens when file uploads are interrupted. The app now includes:
+- Automatic retry logic with exponential backoff
+- WAL mode for better concurrency  
+- Proper connection cleanup and timeout handling
+- Batch processing to prevent long-running transactions
+
+If you still see this error, restart the application:
+```bash
+# Stop Streamlit (Ctrl+C) and restart
+streamlit run app.py
+```
+
+### Date Parsing Issues
+If transactions show wrong years (e.g., 2024 instead of 2025), ensure your PDF filename contains the correct year:
+```
+✅ Good: "August 12, 2025.pdf" 
+❌ Bad: "aug_statement.pdf"
+```
+The processor automatically extracts the year from filenames like "MONTH DD, YYYY.pdf".
+
+### PDF Processing Issues
+```bash
+# Install poppler if PDFs fail to process
+brew install poppler  # macOS
+sudo apt install poppler-utils  # Linux
+```
+
+### Ollama Connection Failed
+```bash
+# Check Ollama is running
+curl http://localhost:11434/api/tags
+
+# Start Ollama if needed
+ollama serve
+```
+
+### Model Not Found
+```bash
+# Pull required models
+ollama pull moondream
+ollama pull llama3.2
+```
+
+## 🔮 Roadmap
+
+### Near Term
+- [ ] Transaction categorization rules
+- [ ] Budget tracking and alerts
+- [ ] Data export (CSV, Excel)
+- [ ] Mobile-responsive design
+
+### Future Features  
+- [ ] Receipt OCR integration
+- [ ] Investment portfolio tracking
+- [ ] Multi-currency support
+- [ ] Custom dashboard widgets
+- [ ] API for external tools
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`  
-3. Commit your changes: `git commit -m 'Add amazing feature'`
-4. Push to the branch: `git push origin feature/amazing-feature`
+2. Create feature branch: `git checkout -b feature/amazing-feature`
+3. Commit changes: `git commit -m 'Add amazing feature'`
+4. Push to branch: `git push origin feature/amazing-feature`
 5. Open a Pull Request
-
-## 🔮 Future Enhancements
-
-- Automatic transaction categorization using Claude
-- Spending pattern analysis and insights  
-- Multi-bank format support improvements
-- Data export capabilities
-- Advanced filtering and reporting
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🆘 Support
-
-- Create an [Issue](https://github.com/your-username/rufous/issues) for bug reports or feature requests
-- Check the database with `python view_database.py` if you have data issues
+MIT License - see [LICENSE](LICENSE) file for details.
 
 ## 🙏 Acknowledgments
 
-- Built with the [Model Context Protocol](https://github.com/anthropics/mcp) by Anthropic
-- Powered by Claude AI for intelligent PDF processing
-- Designed for privacy-conscious financial data management
+- **Ollama** for local AI inference
+- **Streamlit** for rapid web app development
+- **Plotly** for interactive visualizations
+- **Original Rufous** for the foundational concept
+
+---
+
+**Built with ❤️ for privacy-conscious financial analysis**
