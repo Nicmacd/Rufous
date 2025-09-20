@@ -702,7 +702,7 @@ def render_statement_management():
             conn = sqlite3.connect(st.session_state.database.db_path)
             cursor = conn.cursor()
             cursor.execute("""
-                SELECT filename, statement_date, transaction_count, total_amount, created_at 
+                SELECT filename, statement_date, transaction_count, total_amount, processed_at 
                 FROM statements 
                 ORDER BY statement_date DESC
             """)
@@ -746,11 +746,11 @@ def render_statement_management():
                 display_df['statement_date'] = pd.to_datetime(display_df['statement_date']).dt.strftime('%Y-%m')
             if 'total_amount' in display_df.columns:
                 display_df['total_amount'] = display_df['total_amount'].apply(lambda x: f"${x:,.2f}")
-            if 'created_at' in display_df.columns:
-                display_df['created_at'] = pd.to_datetime(display_df['created_at']).dt.strftime('%Y-%m-%d %H:%M')
+            if 'processed_at' in display_df.columns:
+                display_df['processed_at'] = pd.to_datetime(display_df['processed_at']).dt.strftime('%Y-%m-%d %H:%M')
             
             # Select columns to show
-            columns_to_show = ['filename', 'statement_date', 'transaction_count', 'total_amount', 'created_at']
+            columns_to_show = ['filename', 'statement_date', 'transaction_count', 'total_amount', 'processed_at']
             available_columns = [col for col in columns_to_show if col in display_df.columns]
             
             st.dataframe(
@@ -762,7 +762,7 @@ def render_statement_management():
                     "statement_date": "Month",
                     "transaction_count": "Transactions",
                     "total_amount": "Total Amount",
-                    "created_at": "Uploaded"
+                    "processed_at": "Processed"
                 }
             )
             
